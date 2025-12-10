@@ -40,7 +40,7 @@ class MessageOut(BaseModel):
     timestamp: str
 
 
-# ---------- HTML-чат (світла тема) ----------
+# ---------- HTML-чат ----------
 
 CHAT_HTML = """
 <!DOCTYPE html>
@@ -49,30 +49,40 @@ CHAT_HTML = """
     <meta charset="UTF-8" />
     <title>Mini Chat</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             background: #f5f7ff;
             color: #111827;
         }
 
         .card {
-            width: min(720px, 100vw - 32px);
+            width: min(900px, 100vw - 32px);
             height: min(640px, 100vh - 32px);
-            background: #ffffff;
             border-radius: 28px;
-            border: 2px solid #9bbcff;
+            background: #ffffff;
+            border: 2px solid #bfdbfe;
             box-shadow:
-                0 18px 40px rgba(15, 23, 42, 0.15),
-                0 0 0 1px rgba(148, 163, 184, 0.18);
-            padding: 20px 22px 18px;
+                0 20px 50px rgba(15, 23, 42, 0.15),
+                0 0 0 1px rgba(148, 163, 184, 0.4);
+            padding: 18px 20px 18px;
             display: flex;
             flex-direction: column;
             gap: 12px;
+        }
+
+        .field-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .label {
@@ -80,136 +90,151 @@ CHAT_HTML = """
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: #6b7280;
-            margin-bottom: 4px;
         }
 
         .input {
             width: 100%;
             border-radius: 999px;
-            border: 1px solid #bfccff;
-            background: #f6f7ff;
-            padding: 8px 12px;
-            font-size: 13px;
+            border: 1px solid #bfdbfe;
+            background: #f9fbff;
+            padding: 9px 14px;
+            font-size: 14px;
             color: #111827;
             outline: none;
         }
+
         .input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
             background: #ffffff;
         }
 
         .chat-wrapper {
             flex: 1;
             min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .chat-box {
-            flex: 1;
-            border-radius: 16px;
-            background: #f3f6ff;
-            border: 1px solid #c7d2fe;
-            padding: 10px 12px;
+            border-radius: 20px;
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            padding: 10px 10px 12px;
             overflow-y: auto;
-            font-size: 12px;
+            font-size: 13px;
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        .msg {
+        .msg-row {
+            display: flex;
+            width: 100%;
+        }
+
+        .msg-row.me {
+            justify-content: flex-end;
+        }
+
+        .bubble {
             display: inline-block;
             max-width: 75%;
-            padding: 6px 9px;
+            padding: 6px 10px;
             border-radius: 14px;
-            background: #e5edff;
-            border: 1px solid #bfccff;
-            align-self: flex-start;
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #111827;
         }
 
-        .msg.me {
-            align-self: flex-end;
-            background: #dbeafe;
-            border-color: #93c5fd;
+        .bubble.me {
+            background: #3b82f6;
+            border-color: #1d4ed8;
+            color: #eff6ff;
         }
 
         .msg-meta {
-            font-size: 10px;
-            color: #6b7280;
+            font-size: 11px;
+            opacity: 0.7;
             margin-bottom: 2px;
         }
 
         .msg-text {
-            font-size: 12px;
-            color: #111827;
-            word-wrap: break-word;
+            font-size: 13px;
+            line-height: 1.25;
             white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
-        .row {
+        .input-row {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: flex-end;
             margin-top: 4px;
         }
 
         .textarea {
             flex: 1;
-            min-height: 64px;
-            max-height: 100px;
+            min-height: 56px;
+            max-height: 110px;
             border-radius: 16px;
-            border: 1px solid #bfccff;
-            background: #f6f7ff;
-            padding: 8px 11px;
-            font-size: 13px;
+            border: 1px solid #bfdbfe;
+            background: #f9fbff;
+            padding: 10px 12px;
+            font-size: 14px;
             color: #111827;
             resize: none;
             outline: none;
         }
+
         .textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
             background: #ffffff;
         }
 
         .btn {
             border-radius: 999px;
             border: none;
-            padding: 10px 20px;
-            font-size: 13px;
+            padding: 11px 20px;
+            font-size: 14px;
             font-weight: 600;
-            background: linear-gradient(135deg, #2563eb, #60a5fa);
-            color: #eff6ff;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: #f9fafb;
             cursor: pointer;
             box-shadow:
-                0 12px 26px rgba(37, 99, 235, 0.45),
-                0 0 0 1px rgba(37, 99, 235, 0.7);
+                0 12px 30px rgba(37, 99, 235, 0.5),
+                0 0 0 1px rgba(30, 64, 175, 0.6);
             white-space: nowrap;
         }
+
         .btn:active {
             transform: translateY(1px);
             box-shadow:
-                0 6px 16px rgba(37, 99, 235, 0.5),
-                0 0 0 1px rgba(37, 99, 235, 0.8);
+                0 6px 16px rgba(37, 99, 235, 0.55),
+                0 0 0 1px rgba(30, 64, 175, 0.7);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                border-radius: 0;
+                width: 100vw;
+                height: 100vh;
+                max-height: none;
+                max-width: none;
+                padding: 12px 12px 14px;
+            }
         }
     </style>
 </head>
 <body>
 <div class="card">
-    <div>
+    <div class="field-row">
         <div class="label">Нік</div>
         <input id="sender" class="input" value="Vova" />
     </div>
 
-    <div class="chat-wrapper">
+    <div class="field-row" style="flex: 1; min-height: 0;">
         <div class="label">Історія</div>
-        <div id="chat" class="chat-box"></div>
+        <div id="chat" class="chat-wrapper"></div>
     </div>
 
-    <div class="row">
+    <div class="input-row">
         <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
         <button id="sendBtn" class="btn">Send</button>
     </div>
@@ -234,9 +259,13 @@ CHAT_HTML = """
     function renderMessages(list) {
         const me = senderInput.value.trim() || "Me";
         chatBox.innerHTML = "";
+
         for (const m of list) {
-            const wrap = document.createElement("div");
-            wrap.className = "msg" + (m.sender === me ? " me" : "");
+            const row = document.createElement("div");
+            row.className = "msg-row" + (m.sender === me ? " me" : "");
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble" + (m.sender === me ? " me" : "");
 
             const meta = document.createElement("div");
             meta.className = "msg-meta";
@@ -248,10 +277,12 @@ CHAT_HTML = """
             text.className = "msg-text";
             text.textContent = m.text;
 
-            wrap.appendChild(meta);
-            wrap.appendChild(text);
-            chatBox.appendChild(wrap);
+            bubble.appendChild(meta);
+            bubble.appendChild(text);
+            row.appendChild(bubble);
+            chatBox.appendChild(row);
         }
+
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
@@ -287,6 +318,11 @@ CHAT_HTML = """
 </body>
 </html>
 """
+
+@app.get("/", response_class=HTMLResponse)
+def chat_page():
+    return CHAT_HTML
+
 
 # ---------- API-ендпоінти ----------
 
