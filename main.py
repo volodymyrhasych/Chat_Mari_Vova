@@ -47,21 +47,8 @@ CHAT_HTML = """
 <html lang="uk">
 <head>
     <meta charset="UTF-8" />
-    <title>Mini Chat for Volodymyr & Mari</title>
+    <title>Mini Chat</title>
     <style>
-        :root {
-            --blue: #3b82f6;
-            --blue-soft: #dbeafe;
-            --blue-bg: #eff6ff;
-            --border-soft: #cbd5f5;
-            --text-main: #0f172a;
-            --text-muted: #6b7280;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             height: 100vh;
@@ -69,166 +56,161 @@ CHAT_HTML = """
             align-items: center;
             justify-content: center;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: #ffffff;
-            color: var(--text-main);
+            background: #f5f7ff;
+            color: #111827;
         }
 
         .card {
-            width: 420px;
+            width: min(720px, 100vw - 32px);
+            height: min(640px, 100vh - 32px);
             background: #ffffff;
-            border-radius: 24px;
-            border: 1px solid var(--blue);
+            border-radius: 28px;
+            border: 2px solid #9bbcff;
             box-shadow:
-                0 16px 40px rgba(148, 163, 184, 0.35),
-                0 0 0 1px rgba(191, 219, 254, 0.9);
+                0 18px 40px rgba(15, 23, 42, 0.15),
+                0 0 0 1px rgba(148, 163, 184, 0.18);
             padding: 20px 22px 18px;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .header-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .header-sub {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
         .label {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: var(--text-muted);
+            color: #6b7280;
             margin-bottom: 4px;
         }
 
         .input {
             width: 100%;
             border-radius: 999px;
-            border: 1px solid var(--border-soft);
-            background: #ffffff;
+            border: 1px solid #bfccff;
+            background: #f6f7ff;
             padding: 8px 12px;
             font-size: 13px;
-            color: var(--text-main);
+            color: #111827;
             outline: none;
         }
-
         .input:focus {
-            border-color: var(--blue);
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+            background: #ffffff;
+        }
+
+        .chat-wrapper {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .chat-box {
-            height: 140px;
-            border-radius: 12px;
-            background: var(--blue-bg);
-            border: 1px solid var(--border-soft);
-            padding: 8px 10px;
+            flex: 1;
+            border-radius: 16px;
+            background: #f3f6ff;
+            border: 1px solid #c7d2fe;
+            padding: 10px 12px;
             overflow-y: auto;
             font-size: 12px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .msg {
-            padding: 4px 8px;
-            border-radius: 8px;
-            background: #ffffff;
-            border: 1px solid var(--border-soft);
-        }
-
-        .msg-meta {
-            font-size: 10px;
-            color: var(--text-muted);
-            margin-bottom: 1px;
-        }
-
-        .msg-text {
-            font-size: 12px;
-            color: var(--text-main);
+            display: inline-block;
+            max-width: 75%;
+            padding: 6px 9px;
+            border-radius: 14px;
+            background: #e5edff;
+            border: 1px solid #bfccff;
+            align-self: flex-start;
         }
 
         .msg.me {
             align-self: flex-end;
-            background: var(--blue-soft);
-            border-color: var(--blue);
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .msg-meta {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .msg-text {
+            font-size: 12px;
+            color: #111827;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .row {
             display: flex;
             gap: 8px;
             align-items: flex-end;
+            margin-top: 4px;
         }
 
         .textarea {
             flex: 1;
-            min-height: 56px;
-            max-height: 80px;
-            border-radius: 12px;
-            border: 1px solid var(--border-soft);
-            background: #ffffff;
-            padding: 8px 10px;
+            min-height: 64px;
+            max-height: 100px;
+            border-radius: 16px;
+            border: 1px solid #bfccff;
+            background: #f6f7ff;
+            padding: 8px 11px;
             font-size: 13px;
-            color: var(--text-main);
+            color: #111827;
             resize: none;
             outline: none;
         }
-
         .textarea:focus {
-            border-color: var(--blue);
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+            background: #ffffff;
         }
 
         .btn {
             border-radius: 999px;
             border: none;
-            padding: 10px 16px;
+            padding: 10px 20px;
             font-size: 13px;
             font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: #ffffff;
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            color: #eff6ff;
             cursor: pointer;
             box-shadow:
-                0 10px 26px rgba(59, 130, 246, 0.55),
-                0 0 0 1px rgba(37, 99, 235, 0.6);
+                0 12px 26px rgba(37, 99, 235, 0.45),
+                0 0 0 1px rgba(37, 99, 235, 0.7);
             white-space: nowrap;
         }
-
         .btn:active {
             transform: translateY(1px);
             box-shadow:
-                0 6px 18px rgba(37, 99, 235, 0.6),
-                0 0 0 1px rgba(37, 99, 235, 0.7);
+                0 6px 16px rgba(37, 99, 235, 0.5),
+                0 0 0 1px rgba(37, 99, 235, 0.8);
         }
     </style>
 </head>
 <body>
 <div class="card">
     <div>
-        <div class="header-title">Mini Chat for Volodymyr &amp; Mari</div>
-        <div class="header-sub">Локальний прототип поверх FastAPI + SQLite</div>
-    </div>
-
-    <div>
         <div class="label">Нік</div>
         <input id="sender" class="input" value="Vova" />
     </div>
 
-    <div>
+    <div class="chat-wrapper">
         <div class="label">Історія</div>
         <div id="chat" class="chat-box"></div>
     </div>
 
-    <div class="label" style="margin-top: 6px;">
-        Напиши повідомлення… (Enter = відправити, Shift+Enter = новий рядок)
-    </div>
     <div class="row">
-        <textarea id="message" class="textarea"></textarea>
+        <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
         <button id="sendBtn" class="btn">Send</button>
     </div>
 </div>
@@ -305,11 +287,6 @@ CHAT_HTML = """
 </body>
 </html>
 """
-
-@app.get("/", response_class=HTMLResponse)
-def chat_page():
-    return CHAT_HTML
-
 
 # ---------- API-ендпоінти ----------
 
