@@ -21,9 +21,16 @@ class Message(SQLModel, table=True):
     text: str
     timestamp: datetime
 
+    # Нові поля для статусів
+    delivered: bool = False
+    read: bool = False
+    reader: Optional[str] = None
+
 
 @app.on_event("startup")
 def on_startup():
+    # ВАЖЛИВО: при зміні структури таблиці видаляй старий chat.db,
+    # щоб створилась нова таблиця з потрібними колонками.
     SQLModel.metadata.create_all(engine)
 
 
@@ -35,9 +42,16 @@ class MessageIn(BaseModel):
 
 
 class MessageOut(BaseModel):
+    id: int
     sender: str
     text: str
     timestamp: str
+    delivered: bool
+    read: bool
+
+
+class MarkReadRequest(BaseModel):
+    viewer: str
 
 
 # ---------- HTML-чат ----------
@@ -55,13 +69,21 @@ CHAT_HTML = """
 
         body {
             margin: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             background: #f5f7ff;
             color: #111827;
+        }
+
+        /* Рамка по краях всього екрану */
+        .app-frame {
+            position: fixed;
+            inset: 0;
+            border: 2px solid #bfdbfe;
+            box-sizing: border-box;
+            background: #f5f7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .card {
@@ -69,10 +91,10 @@ CHAT_HTML = """
             height: min(640px, 100vh - 32px);
             border-radius: 28px;
             background: #ffffff;
-            border: 2px solid #bfdbfe;
+            border: 1px solid #dbeafe;
             box-shadow:
-                0 20px 50px rgba(15, 23, 42, 0.15),
-                0 0 0 1px rgba(148, 163, 184, 0.4);
+                0 20px 50px rgba(15, 23, 42, 0.12),
+                0 0 0 1px rgba(148, 163, 184, 0.35);
             padding: 18px 20px 18px;
             display: flex;
             flex-direction: column;
@@ -150,8 +172,11 @@ CHAT_HTML = """
 
         .msg-meta {
             font-size: 11px;
-            opacity: 0.7;
+            opacity: 0.8;
             margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .msg-text {
@@ -159,6 +184,19 @@ CHAT_HTML = """
             line-height: 1.25;
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+
+        .msg-status {
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        .status-delivered {
+            color: #9ca3af; /* сіра галочка */
+        }
+
+        .status-read {
+            color: #22c55e; /* зелена галочка */
         }
 
         .input-row {
@@ -223,20 +261,22 @@ CHAT_HTML = """
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="field-row">
-        <div class="label">Нік</div>
-        <input id="sender" class="input" value="Vova" />
-    </div>
+<div class="app-frame">
+    <div class="card">
+        <div class="field-row">
+            <div class="label">Нік</div>
+            <input id="sender" class="input" value="Vova" />
+        </div>
 
-    <div class="field-row" style="flex: 1; min-height: 0;">
-        <div class="label">Історія</div>
-        <div id="chat" class="chat-wrapper"></div>
-    </div>
+        <div class="field-row" style="flex: 1; min-height: 0;">
+            <div class="label">Історія</div>
+            <div id="chat" class="chat-wrapper"></div>
+        </div>
 
-    <div class="input-row">
-        <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
-        <button id="sendBtn" class="btn">Send</button>
+        <div class="input-row">
+            <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
+            <button id="sendBtn" class="btn">Send</button>
+        </div>
     </div>
 </div>
 
@@ -248,9 +288,11 @@ CHAT_HTML = """
 
     async function fetchMessages() {
         try {
-            const res = await fetch("/messages?limit=50");
+            const viewer = encodeURIComponent(senderInput.value.trim() || "");
+            const res = await fetch("/messages?limit=50&viewer=" + viewer);
             const data = await res.json();
             renderMessages(data);
+            await markMessagesRead();
         } catch (e) {
             console.error("Failed to fetch messages", e);
         }
@@ -272,6 +314,25 @@ CHAT_HTML = """
             const t = new Date(m.timestamp);
             const timeStr = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
             meta.textContent = `${m.sender} · ${timeStr}`;
+
+            // Статуси тільки для власних повідомлень
+            if (m.sender === me) {
+                const status = document.createElement("span");
+                status.classList.add("msg-status");
+
+                if (m.read) {
+                    status.classList.add("status-read");
+                    status.textContent = "✔✔";
+                } else if (m.delivered) {
+                    status.classList.add("status-delivered");
+                    status.textContent = "✔";
+                } else {
+                    status.classList.add("status-delivered");
+                    status.textContent = "…";
+                }
+
+                meta.appendChild(status);
+            }
 
             const text = document.createElement("div");
             text.className = "msg-text";
@@ -304,6 +365,21 @@ CHAT_HTML = """
         }
     }
 
+    async function markMessagesRead() {
+        const viewer = senderInput.value.trim();
+        if (!viewer) return;
+
+        try {
+            await fetch("/messages/mark-read", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ viewer }),
+            });
+        } catch (e) {
+            console.error("Failed to mark messages read", e);
+        }
+    }
+
     sendBtn.addEventListener("click", sendMessage);
     msgInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -332,16 +408,32 @@ def health_check():
 
 
 @app.get("/messages", response_model=List[MessageOut])
-def get_messages(limit: int = 50):
+def get_messages(limit: int = 50, viewer: Optional[str] = None):
+    """
+    Повертаємо останні повідомлення.
+    Якщо переданий viewer, вважаємо всі повідомлення
+    «доставленими» цьому користувачу.
+    """
     with Session(engine) as session:
+        # оновлюємо delivered, якщо користувач відкрив чат
+        if viewer:
+            stmt_to_deliver = select(Message).where(Message.delivered == False)
+            for msg in session.exec(stmt_to_deliver):
+                msg.delivered = True
+            session.commit()
+
         stmt = select(Message).order_by(Message.id.desc()).limit(limit)
         rows = list(session.exec(stmt))
         rows = list(reversed(rows))
+
         return [
             MessageOut(
+                id=row.id,
                 sender=row.sender,
                 text=row.text,
                 timestamp=row.timestamp.isoformat() + "Z",
+                delivered=row.delivered,
+                read=row.read,
             )
             for row in rows
         ]
@@ -350,14 +442,49 @@ def get_messages(limit: int = 50):
 @app.post("/messages", response_model=MessageOut)
 def send_message(msg: MessageIn):
     now = datetime.utcnow()
-    new_row = Message(sender=msg.sender, text=msg.text, timestamp=now)
+    new_row = Message(
+        sender=msg.sender,
+        text=msg.text,
+        timestamp=now,
+        delivered=False,
+        read=False,
+        reader=None,
+    )
     with Session(engine) as session:
         session.add(new_row)
         session.commit()
         session.refresh(new_row)
 
     return MessageOut(
+        id=new_row.id,
         sender=new_row.sender,
         text=new_row.text,
         timestamp=new_row.timestamp.isoformat() + "Z",
+        delivered=new_row.delivered,
+        read=new_row.read,
     )
+
+
+@app.post("/messages/mark-read")
+def mark_messages_read(payload: MarkReadRequest):
+    """
+    Позначаємо всі повідомлення, які НЕ від цього користувача,
+    як прочитані ним.
+    """
+    viewer = payload.viewer.strip()
+    if not viewer:
+        return {"updated": 0}
+
+    with Session(engine) as session:
+        stmt = select(Message).where(
+            Message.sender != viewer,
+            Message.read == False
+        )
+        rows = list(session.exec(stmt))
+        for row in rows:
+            row.read = True
+            row.delivered = True
+            row.reader = viewer
+        session.commit()
+
+        return {"updated": len(rows)}
