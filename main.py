@@ -40,7 +40,7 @@ class MessageOut(BaseModel):
     timestamp: str
 
 
-# ---------- HTML-чат ----------
+# ---------- HTML-чат (світла тема) ----------
 
 CHAT_HTML = """
 <!DOCTYPE html>
@@ -49,6 +49,19 @@ CHAT_HTML = """
     <meta charset="UTF-8" />
     <title>Mini Chat for Volodymyr & Mari</title>
     <style>
+        :root {
+            --blue: #3b82f6;
+            --blue-soft: #dbeafe;
+            --blue-bg: #eff6ff;
+            --border-soft: #cbd5f5;
+            --text-main: #0f172a;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             height: 100vh;
@@ -56,56 +69,64 @@ CHAT_HTML = """
             align-items: center;
             justify-content: center;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-            background: radial-gradient(circle at top, #1f2933 0, #020617 55%, #020617 100%);
-            color: #e5e7eb;
+            background: #ffffff;
+            color: var(--text-main);
         }
+
         .card {
             width: 420px;
-            background: rgba(10, 16, 30, 0.95);
+            background: #ffffff;
             border-radius: 24px;
+            border: 1px solid var(--blue);
             box-shadow:
-                0 20px 60px rgba(0,0,0,0.8),
-                0 0 0 1px rgba(148, 163, 184, 0.08);
+                0 16px 40px rgba(148, 163, 184, 0.35),
+                0 0 0 1px rgba(191, 219, 254, 0.9);
             padding: 20px 22px 18px;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
+
         .header-title {
             font-size: 16px;
             font-weight: 600;
-            color: #f9fafb;
+            color: var(--text-main);
         }
+
         .header-sub {
             font-size: 11px;
-            color: #9ca3af;
+            color: var(--text-muted);
         }
+
         .label {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #6b7280;
+            color: var(--text-muted);
             margin-bottom: 4px;
         }
+
         .input {
             width: 100%;
             border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-soft);
+            background: #ffffff;
             padding: 8px 12px;
             font-size: 13px;
-            color: #e5e7eb;
+            color: var(--text-main);
             outline: none;
         }
+
         .input:focus {
-            border-color: #4ade80;
-            box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.4);
+            border-color: var(--blue);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
         }
+
         .chat-box {
             height: 140px;
             border-radius: 12px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(31, 41, 55, 0.9);
+            background: var(--blue-bg);
+            border: 1px solid var(--border-soft);
             padding: 8px 10px;
             overflow-y: auto;
             font-size: 12px;
@@ -113,67 +134,76 @@ CHAT_HTML = """
             flex-direction: column;
             gap: 4px;
         }
+
         .msg {
             padding: 4px 8px;
             border-radius: 8px;
-            background: rgba(15, 118, 110, 0.2);
-            border: 1px solid rgba(34, 197, 94, 0.25);
+            background: #ffffff;
+            border: 1px solid var(--border-soft);
         }
+
         .msg-meta {
             font-size: 10px;
-            color: #9ca3af;
+            color: var(--text-muted);
             margin-bottom: 1px;
         }
+
         .msg-text {
             font-size: 12px;
-            color: #e5e7eb;
+            color: var(--text-main);
         }
+
         .msg.me {
             align-self: flex-end;
-            background: rgba(37, 99, 235, 0.2);
-            border-color: rgba(59, 130, 246, 0.3);
+            background: var(--blue-soft);
+            border-color: var(--blue);
         }
+
         .row {
             display: flex;
             gap: 8px;
             align-items: flex-end;
         }
+
         .textarea {
             flex: 1;
             min-height: 56px;
             max-height: 80px;
             border-radius: 12px;
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-soft);
+            background: #ffffff;
             padding: 8px 10px;
             font-size: 13px;
-            color: #e5e7eb;
+            color: var(--text-main);
             resize: none;
             outline: none;
         }
+
         .textarea:focus {
-            border-color: #4ade80;
-            box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.4);
+            border-color: var(--blue);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
         }
+
         .btn {
             border-radius: 999px;
             border: none;
             padding: 10px 16px;
             font-size: 13px;
             font-weight: 600;
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            color: #022c22;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: #ffffff;
             cursor: pointer;
             box-shadow:
-                0 10px 30px rgba(34, 197, 94, 0.5),
-                0 0 0 1px rgba(22, 163, 74, 0.6);
+                0 10px 26px rgba(59, 130, 246, 0.55),
+                0 0 0 1px rgba(37, 99, 235, 0.6);
             white-space: nowrap;
         }
+
         .btn:active {
             transform: translateY(1px);
             box-shadow:
-                0 5px 18px rgba(34, 197, 94, 0.55),
-                0 0 0 1px rgba(22, 163, 74, 0.7);
+                0 6px 18px rgba(37, 99, 235, 0.6),
+                0 0 0 1px rgba(37, 99, 235, 0.7);
         }
     </style>
 </head>
@@ -287,6 +317,7 @@ def chat_page():
 def health_check():
     return {"status": "ok"}
 
+
 @app.get("/messages", response_model=List[MessageOut])
 def get_messages(limit: int = 50):
     with Session(engine) as session:
@@ -301,6 +332,7 @@ def get_messages(limit: int = 50):
             )
             for row in rows
         ]
+
 
 @app.post("/messages", response_model=MessageOut)
 def send_message(msg: MessageIn):
