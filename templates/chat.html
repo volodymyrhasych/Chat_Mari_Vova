@@ -1,346 +1,434 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8" />
-    <title>Mini Chat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <title>Mini Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #eef1ff;
-            color: #0f172a;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #eef2ff;
+      color: #111827;
+    }
 
-        /* Весь екран — сторінка чату */
-        .page {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: stretch;
+    }
 
-        /* Блок з повідомленнями */
-        #chatBox {
-            flex: 1;
-            margin: 8px;
-            border-radius: 18px;
-            border: 1px solid #dbeafe;
-            background: #f4f6ff;
-            padding: 10px 10px 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    /* ---------- Вхідне питання (оверлей) ---------- */
 
-        .msg-row {
-            display: flex;
-            width: 100%;
-        }
+    .gate-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, rgba(129, 140, 248, 0.18), #eef2ff 55%);
+      z-index: 10;
+    }
 
-        .msg-row.me {
-            justify-content: flex-end;
-        }
+    .gate-card {
+      width: min(420px, 100vw - 40px);
+      border-radius: 28px;
+      padding: 22px 22px 20px;
+      background: #ffffff;
+      box-shadow:
+        0 24px 60px rgba(15, 23, 42, 0.16),
+        0 0 0 1px rgba(148, 163, 184, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
 
-        .bubble {
-            display: inline-block;
-            max-width: 76%;
-            padding: 6px 10px;
-            border-radius: 14px;
-            background: #dbeafe;
-            border: 1px solid #93c5fd;
-            color: #0f172a;
-            font-size: 13px;
-        }
+    .gate-question {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: #0f172a;
+    }
 
-        .bubble.me {
-            background: #3b82f6;
-            border-color: #1d4ed8;
-            color: #eff6ff;
-        }
+    .gate-input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 10px 16px;
+      font-size: 15px;
+      outline: none;
+    }
 
-        .msg-meta {
-            font-size: 11px;
-            opacity: 0.75;
-            margin-bottom: 2px;
-        }
+    .gate-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      background: #ffffff;
+    }
 
-        .msg-text {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-size: 13px;
-            line-height: 1.25;
-        }
+    .gate-btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
 
-        /* Низ екрану: інпут + кнопка */
-        .input-row {
-            padding: 8px;
-            padding-bottom: 10px;
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-        }
+    .gate-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow:
+        0 12px 30px rgba(37, 99, 235, 0.45),
+        0 0 0 1px rgba(30, 64, 175, 0.6);
+    }
 
-        .textarea {
-            flex: 1;
-            min-height: 44px;
-            max-height: 120px;
-            border-radius: 999px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            padding: 10px 14px;
-            font-size: 14px;
-            color: #0f172a;
-            resize: none;
-            outline: none;
-        }
+    .gate-btn:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 6px 16px rgba(37, 99, 235, 0.5),
+        0 0 0 1px rgba(30, 64, 175, 0.7);
+    }
 
-        .textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
-            background: #ffffff;
-        }
+    .hidden {
+      display: none;
+    }
 
-        .btn {
-            border-radius: 999px;
-            border: none;
-            padding: 11px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: #f9fafb;
-            cursor: pointer;
-            box-shadow:
-                0 12px 30px rgba(37, 99, 235, 0.5),
-                0 0 0 1px rgba(30, 64, 175, 0.6);
-            white-space: nowrap;
-        }
+    /* ---------- Основний чат, повноекранний ---------- */
 
-        .btn:active {
-            transform: translateY(1px);
-            box-shadow:
-                0 6px 16px rgba(37, 99, 235, 0.55),
-                0 0 0 1px rgba(30, 64, 175, 0.7);
-        }
+    .chat-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 10px 12px;
+    }
 
-        /* ---------- LOGIN OVERLAY ---------- */
+    .chat-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-radius: 24px;
+      background: #ffffff;
+      border: 1px solid #bfdbfe;
+      box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(148, 163, 184, 0.35);
+      padding: 10px 10px 12px;
+    }
 
-        .login-overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at top, rgba(148, 163, 184, 0.25), rgba(15, 23, 42, 0.95));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-        }
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0; /* важливо, щоб скрол працював нормально */
+    }
 
-        .login-card {
-            width: min(420px, 100vw - 32px);
-            background: #ffffff;
-            border-radius: 26px;
-            padding: 22px 22px 20px;
-            box-shadow:
-                0 24px 60px rgba(15, 23, 42, 0.35),
-                0 0 0 1px rgba(148, 163, 184, 0.4);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
+    .messages {
+      flex: 1;
+      min-height: 0;
+      border-radius: 16px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      padding: 10px 10px 12px;
+      overflow-y: auto;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
-        .login-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #0f172a;
-        }
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
 
-        .login-input {
-            width: 100%;
-            border-radius: 999px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            padding: 10px 14px;
-            font-size: 14px;
-            outline: none;
-        }
+    .msg-row.me {
+      justify-content: flex-end;
+    }
 
-        .login-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
-            background: #ffffff;
-        }
+    .bubble {
+      display: inline-block;
+      max-width: 75%;
+      padding: 6px 10px;
+      border-radius: 14px;
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      color: #111827;
+    }
 
-        .login-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 4px;
-        }
-    </style>
+    .bubble.me {
+      background: #3b82f6;
+      border-color: #1d4ed8;
+      color: #f9fafb;
+    }
+
+    .msg-meta {
+      font-size: 11px;
+      opacity: 0.75;
+      margin-bottom: 2px;
+    }
+
+    .msg-text {
+      font-size: 13px;
+      line-height: 1.25;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .input-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .textarea {
+      flex: 1;
+      min-height: 48px;
+      max-height: 110px;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #111827;
+      resize: none;
+      outline: none;
+    }
+
+    .textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      background: #ffffff;
+    }
+
+    .send-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow:
+        0 12px 30px rgba(37, 99, 235, 0.45),
+        0 0 0 1px rgba(30, 64, 175, 0.6);
+      white-space: nowrap;
+    }
+
+    .send-btn:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 6px 16px rgba(37, 99, 235, 0.5),
+        0 0 0 1px rgba(30, 64, 175, 0.7);
+    }
+
+    @media (max-width: 640px) {
+      .chat-shell {
+        padding: 4px 4px 6px;
+      }
+
+      .chat-card {
+        border-radius: 0;
+      }
+    }
+  </style>
 </head>
 <body>
 <div class="page">
-    <div id="chatBox"></div>
-
-    <div class="input-row">
-        <textarea id="messageInput" class="textarea" placeholder="Напиши повідомлення…"></textarea>
-        <button id="sendBtn" class="btn">Send</button>
+  <!-- Оверлей з питанням -->
+  <div id="gate" class="gate-overlay">
+    <div class="gate-card">
+      <div class="gate-question">Who do you love?</div>
+      <input
+        id="love-answer"
+        class="gate-input"
+        placeholder=""
+        autocomplete="off"
+      />
+      <div class="gate-btn-row">
+        <button id="gate-continue" class="gate-btn">Continue</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- LOGIN OVERLAY -->
-<div id="loginOverlay" class="login-overlay">
-    <div class="login-card">
-        <div class="login-title">Who do you love?</div>
-        <input id="loginAnswer" class="login-input" autocomplete="off" />
-        <div class="login-actions">
-            <button id="loginBtn" class="btn">Continue</button>
+  <!-- Сам чат -->
+  <div id="chat-shell" class="chat-shell hidden">
+    <div class="chat-card">
+      <div class="chat-main">
+        <div id="chat" class="messages"></div>
+
+        <div class="input-row">
+          <textarea
+            id="message"
+            class="textarea"
+            placeholder="Напиши повідомлення…"
+          ></textarea>
+          <button id="sendBtn" class="send-btn">Send</button>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-    let sender = null;
+  const chatShell = document.getElementById("chat-shell");
+  const gate = document.getElementById("gate");
+  const loveInput = document.getElementById("love-answer");
+  const gateBtn = document.getElementById("gate-continue");
 
-    const chatBox = document.getElementById("chatBox");
-    const msgInput = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
+  const msgInput = document.getElementById("message");
+  const chatBox = document.getElementById("chat");
+  const sendBtn = document.getElementById("sendBtn");
 
-    const loginOverlay = document.getElementById("loginOverlay");
-    const loginInput = document.getElementById("loginAnswer");
-    const loginBtn = document.getElementById("loginBtn");
+  let myName = null;
+  let lovedName = null;
 
-    // --------- LOGIN LOGIC ---------
+  function resolveNames(answerRaw) {
+    const ans = (answerRaw || "").trim().toLowerCase();
 
-    function initSenderFromStorage() {
-        const saved = localStorage.getItem("chat_sender");
-        if (saved) {
-            sender = saved;
-            loginOverlay.style.display = "none";
-        }
-    }
-
-    function handleLogin() {
-        const raw = loginInput.value.trim().toLowerCase();
-
-        let resolvedSender = null;
-        if (raw === "mari") {
-            // написали "Mari" -> пишемо як Vova
-            resolvedSender = "Vova";
-        } else if (raw === "vova") {
-            // написали "Vova" -> пишемо як Mari
-            resolvedSender = "Mari";
-        } else {
-            alert("Please answer with Vova or Mari.");
-            return;
-        }
-
-        sender = resolvedSender;
-        localStorage.setItem("chat_sender", sender);
-        loginOverlay.style.display = "none";
-        msgInput.focus();
-        fetchMessages();
-    }
-
-    loginBtn.addEventListener("click", handleLogin);
-    loginInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleLogin();
-        }
-    });
-
-    initSenderFromStorage();
-
-    // --------- CHAT LOGIC ---------
-
-    async function fetchMessages() {
-        try {
-            const res = await fetch("/messages?limit=200");
-            const data = await res.json();
-            renderMessages(data);
-        } catch (e) {
-            console.error("Failed to fetch messages", e);
-        }
-    }
-
-    function renderMessages(list) {
-        chatBox.innerHTML = "";
-        const me = sender || "";
-
-        for (const m of list) {
-            const row = document.createElement("div");
-            row.className = "msg-row" + (m.sender === me ? " me" : "");
-
-            const bubble = document.createElement("div");
-            bubble.className = "bubble" + (m.sender === me ? " me" : "");
-
-            const meta = document.createElement("div");
-            meta.className = "msg-meta";
-            const t = new Date(m.timestamp);
-            const timeStr = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
-            meta.textContent = `${m.sender} · ${timeStr}`;
-
-            const text = document.createElement("div");
-            text.className = "msg-text";
-            text.textContent = m.text;
-
-            bubble.appendChild(meta);
-            bubble.appendChild(text);
-            row.appendChild(bubble);
-            chatBox.appendChild(row);
-        }
-
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    async function sendMessage() {
-        if (!sender) {
-            loginInput.focus();
-            return;
-        }
-
-        const text = msgInput.value.trim();
-        if (!text) return;
-
-        try {
-            await fetch("/messages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sender, text }),
-            });
-            msgInput.value = "";
-            await fetchMessages();
-        } catch (e) {
-            console.error("Failed to send message", e);
-        }
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-    msgInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    if (sender) {
-        fetchMessages();
-        setInterval(fetchMessages, 3000);
+    if (ans === "vova") {
+      // ти любиш Vova → ти Mari
+      myName = "Mari";
+      lovedName = "Vova";
+    } else if (ans === "mari") {
+      // ти любиш Mari → ти Vova
+      myName = "Vova";
+      lovedName = "Mari";
     } else {
-        // як тільки пройдемо логін, почне підтягуватися історія
-        setInterval(() => {
-            if (sender) fetchMessages();
-        }, 3000);
+      return false;
     }
+
+    localStorage.setItem("miniChatMyName", myName);
+    localStorage.setItem("miniChatLovedName", lovedName);
+    return true;
+  }
+
+  function showChatUI() {
+    gate.classList.add("hidden");
+    chatShell.classList.remove("hidden");
+    fetchMessages();
+  }
+
+  function initGate() {
+    const storedMe = localStorage.getItem("miniChatMyName");
+    const storedLoved = localStorage.getItem("miniChatLovedName");
+
+    if (storedMe && storedLoved) {
+      myName = storedMe;
+      lovedName = storedLoved;
+      showChatUI();
+      return;
+    }
+
+    gate.classList.remove("hidden");
+    chatShell.classList.add("hidden");
+
+    function handleContinue() {
+      if (resolveNames(loveInput.value)) {
+        showChatUI();
+      } else {
+        loveInput.value = "";
+        loveInput.placeholder = "Only Vova or Mari";
+      }
+    }
+
+    gateBtn.addEventListener("click", handleContinue);
+    loveInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleContinue();
+      }
+    });
+  }
+
+  async function fetchMessages() {
+    try {
+      const res = await fetch("/messages?limit=200");
+      const data = await res.json();
+      renderMessages(data);
+    } catch (e) {
+      console.error("Failed to fetch messages", e);
+    }
+  }
+
+  function renderMessages(list) {
+    const me = myName || "";
+    chatBox.innerHTML = "";
+
+    for (const m of list) {
+      const row = document.createElement("div");
+      row.className = "msg-row" + (m.sender === me ? " me" : "");
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (m.sender === me ? " me" : "");
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      const t = new Date(m.timestamp);
+      const timeStr = t.toLocaleTimeString("uk-UA", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      meta.textContent = `${m.sender} · ${timeStr}`;
+
+      const text = document.createElement("div");
+      text.className = "msg-text";
+      text.textContent = m.text;
+
+      bubble.appendChild(meta);
+      bubble.appendChild(text);
+      row.appendChild(bubble);
+      chatBox.appendChild(row);
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!myName || !text) return;
+
+    try {
+      await fetch("/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: myName, text }),
+      });
+      msgInput.value = "";
+      await fetchMessages();
+    } catch (e) {
+      console.error("Failed to send message", e);
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  msgInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // старт
+  initGate();
+  setInterval(fetchMessages, 3000);
 </script>
 </body>
 </html>
