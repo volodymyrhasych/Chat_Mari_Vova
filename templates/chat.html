@@ -8,8 +8,13 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
             margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
             height: 100vh;
             display: flex;
             align-items: center;
@@ -32,14 +37,9 @@
             gap: 18px;
         }
 
-        .welcome-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
         .welcome-text {
-            font-size: 14px;
-            margin-bottom: 4px;
+            font-size: 18px;
+            font-weight: 600;
         }
 
         .welcome-input {
@@ -80,6 +80,7 @@
             flex-direction: column;
             padding: 20px;
             gap: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
 
         .label {
@@ -155,11 +156,31 @@
             font-weight: 600;
         }
 
+        /* --- MOBILE FULLSCREEN LAYOUT --- */
         @media (max-width: 640px) {
+            body {
+                align-items: stretch;
+                justify-content: stretch;
+            }
+
+            .welcome-screen,
             .chat-card {
                 width: 100vw;
                 height: 100vh;
+                max-width: none;
+                max-height: none;
                 border-radius: 0;
+                border-width: 0;
+                box-shadow: none;
+            }
+
+            .welcome-screen {
+                padding: 32px 18px;
+                justify-content: center;
+            }
+
+            .chat-card {
+                padding: 14px 12px 16px;
             }
         }
     </style>
@@ -168,7 +189,6 @@
 
 <!-- LOGIN SCREEN -->
 <div id="welcome" class="welcome-screen">
-    <div class="welcome-title">One small question 💌</div>
     <div class="welcome-text">Who do you love?</div>
 
     <input id="who-input" class="welcome-input" />
@@ -211,7 +231,10 @@
 
         if (val === "vova") sender = "Mari";
         else if (val === "mari") sender = "Vova";
-        else return alert("Wrong answer 😄");
+        else {
+            alert("Wrong answer 😄");
+            return;
+        }
 
         localStorage.setItem("sender", sender);
 
@@ -224,9 +247,13 @@
     const sendBtn = document.getElementById("sendBtn");
 
     async function fetchMessages() {
-        const res = await fetch("/messages?limit=50");
-        const data = await res.json();
-        renderMessages(data);
+        try {
+            const res = await fetch("/messages?limit=50");
+            const data = await res.json();
+            renderMessages(data);
+        } catch (e) {
+            console.error("Failed to fetch messages", e);
+        }
     }
 
     function renderMessages(list) {
@@ -244,7 +271,10 @@
             meta.className = "msg-meta";
 
             const t = new Date(m.timestamp);
-            const time = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+            const time = t.toLocaleTimeString("uk-UA", {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
 
             meta.textContent = `${m.sender} • ${time}`;
 
@@ -266,14 +296,17 @@
         const text = msgInput.value.trim();
         if (!text) return;
 
-        await fetch("/messages", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sender, text }),
-        });
-
-        msgInput.value = "";
-        fetchMessages();
+        try {
+            await fetch("/messages", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sender, text }),
+            });
+            msgInput.value = "";
+            await fetchMessages();
+        } catch (e) {
+            console.error("Failed to send message", e);
+        }
     }
 
     sendBtn.addEventListener("click", sendMessage);
