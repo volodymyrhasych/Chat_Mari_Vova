@@ -3,142 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <title>Mini Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * {
       box-sizing: border-box;
     }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-
     body {
+      margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       background: #eef2ff;
       color: #111827;
     }
 
-    /* Вся сторінка зафіксована на весь екран */
-    .page {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: stretch;
-    }
-
-    /* ---------- Оверлей питання ---------- */
-
-    .gate-overlay {
-      position: absolute;
-      inset: 0;
+    .app {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at top, rgba(129, 140, 248, 0.18), #eef2ff 55%);
-      z-index: 10;
-    }
-
-    .gate-card {
-      width: min(420px, 100vw - 40px);
-      border-radius: 28px;
-      padding: 22px 22px 20px;
-      background: #ffffff;
-      box-shadow:
-        0 24px 60px rgba(15, 23, 42, 0.16),
-        0 0 0 1px rgba(148, 163, 184, 0.4);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .gate-question {
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      color: #0f172a;
-    }
-
-    .gate-input {
-      width: 100%;
-      border-radius: 999px;
-      border: 1px solid #bfdbfe;
-      background: #f9fbff;
-      padding: 10px 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .gate-input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
-      background: #ffffff;
-    }
-
-    .gate-btn-row {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 4px;
-    }
-
-    .gate-btn {
-      border-radius: 999px;
-      border: none;
-      padding: 11px 22px;
-      font-size: 14px;
-      font-weight: 600;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: #f9fafb;
-      cursor: pointer;
-      box-shadow:
-        0 12px 30px rgba(37, 99, 235, 0.45),
-        0 0 0 1px rgba(30, 64, 175, 0.6);
-    }
-
-    .gate-btn:active {
-      transform: translateY(1px);
-      box-shadow:
-        0 6px 16px rgba(37, 99, 235, 0.5),
-        0 0 0 1px rgba(30, 64, 175, 0.7);
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    /* ---------- Основний чат (full-screen) ---------- */
-
-    .chat-shell {
-      flex: 1;
-      display: flex;
       padding: 8px;
     }
 
-    .chat-card {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+    .card {
+      width: min(960px, 100vw - 12px);
+      height: min(720px, 100vh - 12px);
       border-radius: 24px;
       background: #ffffff;
-      border: 1px solid #bfdbfe;
+      border: 2px solid #bfdbfe;
       box-shadow:
-        0 18px 45px rgba(15, 23, 42, 0.12),
-        0 0 0 1px rgba(148, 163, 184, 0.35);
+        0 20px 50px rgba(15, 23, 42, 0.14),
+        0 0 0 1px rgba(148, 163, 184, 0.45);
       padding: 10px 10px 12px;
-    }
-
-    .chat-main {
-      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      min-height: 0; /* щоб скрол всередині працював нормально */
+      position: relative;
     }
 
+    /* Контейнер для історії */
     .messages {
       flex: 1;
       min-height: 0;
@@ -148,8 +50,10 @@
       padding: 10px 10px 12px;
       overflow-y: auto;
       font-size: 13px;
+
       display: flex;
       flex-direction: column;
+      justify-content: flex-end;  /* бульбашки завжди внизу */
       gap: 6px;
     }
 
@@ -157,61 +61,58 @@
       display: flex;
       width: 100%;
     }
-
     .msg-row.me {
       justify-content: flex-end;
     }
 
     .bubble {
       display: inline-block;
-      max-width: 75%;
+      max-width: 80%;
       padding: 6px 10px;
       border-radius: 14px;
       background: #dbeafe;
       border: 1px solid #93c5fd;
       color: #111827;
+      word-wrap: break-word;
+      white-space: pre-wrap;
     }
 
     .bubble.me {
       background: #3b82f6;
       border-color: #1d4ed8;
-      color: #f9fafb;
+      color: #eff6ff;
     }
 
     .msg-meta {
       font-size: 11px;
-      opacity: 0.75;
+      opacity: 0.8;
       margin-bottom: 2px;
     }
 
     .msg-text {
       font-size: 13px;
       line-height: 1.25;
-      white-space: pre-wrap;
-      word-wrap: break-word;
     }
 
+    /* Строка вводу — фіксовано внизу картки */
     .input-row {
-      margin-top: 6px;
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
+      margin-top: 6px;
     }
 
-    /* Фіксована висота input-бара, щоб він не ріс */
     .textarea {
       flex: 1;
-      height: 44px;
       min-height: 44px;
-      max-height: 44px;
+      max-height: 120px;
       border-radius: 999px;
       border: 1px solid #bfdbfe;
       background: #f9fbff;
-      padding: 10px 14px;
+      padding: 10px 16px;
       font-size: 14px;
       color: #111827;
       resize: none;
-      overflow-y: auto;
       outline: none;
     }
 
@@ -221,150 +122,194 @@
       background: #ffffff;
     }
 
-    .send-btn {
+    .btn {
       border-radius: 999px;
       border: none;
-      padding: 11px 18px;
+      padding: 11px 22px;
       font-size: 14px;
       font-weight: 600;
       background: linear-gradient(135deg, #3b82f6, #60a5fa);
       color: #f9fafb;
       cursor: pointer;
       box-shadow:
-        0 12px 30px rgba(37, 99, 235, 0.45),
-        0 0 0 1px rgba(30, 64, 175, 0.6);
+        0 12px 30px rgba(37, 99, 235, 0.55),
+        0 0 0 1px rgba(30, 64, 175, 0.65);
       white-space: nowrap;
     }
 
-    .send-btn:active {
+    .btn:active {
       transform: translateY(1px);
       box-shadow:
-        0 6px 16px rgba(37, 99, 235, 0.5),
+        0 6px 16px rgba(37, 99, 235, 0.6),
         0 0 0 1px rgba(30, 64, 175, 0.7);
     }
 
-    @media (max-width: 640px) {
-      .chat-shell {
-        padding: 4px 4px 6px;
-      }
+    /* Логін-оверлей */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 20;
+    }
 
-      .chat-card {
+    .login-card {
+      width: min(420px, 100%);
+      border-radius: 24px;
+      background: #ffffff;
+      border: 2px solid #bfdbfe;
+      box-shadow:
+        0 20px 45px rgba(15, 23, 42, 0.35),
+        0 0 0 1px rgba(148, 163, 184, 0.5);
+      padding: 22px 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .login-question {
+      font-size: 22px;
+      font-weight: 650;
+      color: #111827;
+    }
+
+    .login-input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 10px 14px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .login-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      background: #ffffff;
+    }
+
+    .login-error {
+      font-size: 12px;
+      color: #dc2626;
+      min-height: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding: 0;
+      }
+      .card {
+        width: 100vw;
+        height: 100vh;
         border-radius: 0;
+        border-width: 0;
+        box-shadow: none;
+        padding: 6px 6px 10px;
+      }
+      .messages {
+        border-radius: 16px;
+      }
+      .textarea {
+        border-radius: 999px;
       }
     }
   </style>
 </head>
 <body>
-<div class="page">
-  <!-- Оверлей з питанням -->
-  <div id="gate" class="gate-overlay">
-    <div class="gate-card">
-      <div class="gate-question">Who do you love?</div>
-      <input
-        id="love-answer"
-        class="gate-input"
-        placeholder=""
-        autocomplete="off"
-      />
-      <div class="gate-btn-row">
-        <button id="gate-continue" class="gate-btn">Continue</button>
-      </div>
+<div class="app">
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-question">Who do you love?</div>
+      <input id="loginAnswer" class="login-input" autocomplete="off" />
+      <div id="loginError" class="login-error"></div>
+      <button id="loginBtn" class="btn" style="align-self: flex-end;">Continue</button>
     </div>
   </div>
 
-  <!-- Сам чат -->
-  <div id="chat-shell" class="chat-shell hidden">
-    <div class="chat-card">
-      <div class="chat-main">
-        <div id="chat" class="messages"></div>
-
-        <div class="input-row">
-          <textarea
-            id="message"
-            class="textarea"
-            placeholder="Напиши повідомлення…"
-          ></textarea>
-          <button id="sendBtn" class="send-btn">Send</button>
-        </div>
-      </div>
+  <div id="chatCard" class="card hidden">
+    <div id="chat" class="messages"></div>
+    <div class="input-row">
+      <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
+      <button id="sendBtn" class="btn">Send</button>
     </div>
   </div>
 </div>
 
 <script>
-  const chatShell = document.getElementById("chat-shell");
-  const gate = document.getElementById("gate");
-  const loveInput = document.getElementById("love-answer");
-  const gateBtn = document.getElementById("gate-continue");
+  const STORAGE_KEY = "miniChatUserName";
+  const API_URL_MESSAGES = "/messages";
 
-  const msgInput = document.getElementById("message");
+  const chatCard = document.getElementById("chatCard");
   const chatBox = document.getElementById("chat");
+  const msgInput = document.getElementById("message");
   const sendBtn = document.getElementById("sendBtn");
 
-  let myName = null;
-  let lovedName = null;
+  const loginOverlay = document.getElementById("loginOverlay");
+  const loginAnswer = document.getElementById("loginAnswer");
+  const loginError = document.getElementById("loginError");
+  const loginBtn = document.getElementById("loginBtn");
 
-  function resolveNames(answerRaw) {
-    const ans = (answerRaw || "").trim().toLowerCase();
+  let meName = null;
 
-    if (ans === "vova") {
-      // любиш Vova -> пишеш як Mari
-      myName = "Mari";
-      lovedName = "Vova";
-    } else if (ans === "mari") {
-      // любиш Mari -> пишеш як Vova
-      myName = "Vova";
-      lovedName = "Mari";
-    } else {
-      return false;
-    }
-
-    localStorage.setItem("miniChatMyName", myName);
-    localStorage.setItem("miniChatLovedName", lovedName);
-    return true;
+  function setMeName(name) {
+    meName = name;
+    localStorage.setItem(STORAGE_KEY, name);
   }
 
-  function showChatUI() {
-    gate.classList.add("hidden");
-    chatShell.classList.remove("hidden");
+  function showChat() {
+    loginOverlay.classList.add("hidden");
+    chatCard.classList.remove("hidden");
+  }
+
+  function showLogin() {
+    loginOverlay.classList.remove("hidden");
+    chatCard.classList.add("hidden");
+    loginAnswer.value = "";
+    loginError.textContent = "";
+    loginAnswer.focus();
+  }
+
+  function resolveLogin(answerRaw) {
+    const ans = (answerRaw || "").trim().toLowerCase();
+    if (ans === "vova") {
+      // Любиш Vova → пише Mari
+      return "Mari";
+    }
+    if (ans === "mari") {
+      // Любиш Mari → пише Vova
+      return "Vova";
+    }
+    return null;
+  }
+
+  function handleLoginSubmit() {
+    const val = loginAnswer.value;
+    const resolved = resolveLogin(val);
+    if (!resolved) {
+      loginError.textContent = "Type exactly: Vova or Mari.";
+      loginAnswer.focus();
+      return;
+    }
+    loginError.textContent = "";
+    setMeName(resolved);
+    showChat();
     fetchMessages();
   }
 
-  function initGate() {
-    const storedMe = localStorage.getItem("miniChatMyName");
-    const storedLoved = localStorage.getItem("miniChatLovedName");
-
-    if (storedMe && storedLoved) {
-      myName = storedMe;
-      lovedName = storedLoved;
-      showChatUI();
-      return;
-    }
-
-    gate.classList.remove("hidden");
-    chatShell.classList.add("hidden");
-
-    function handleContinue() {
-      if (resolveNames(loveInput.value)) {
-        showChatUI();
-      } else {
-        loveInput.value = "";
-        loveInput.placeholder = "Only Vova or Mari";
-      }
-    }
-
-    gateBtn.addEventListener("click", handleContinue);
-    loveInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleContinue();
-      }
-    });
-  }
+  // ------------- API -------------
 
   async function fetchMessages() {
     try {
-      const res = await fetch("/messages?limit=200");
+      const res = await fetch(API_URL_MESSAGES + "?limit=100");
+      if (!res.ok) return;
       const data = await res.json();
       renderMessages(data);
     } catch (e) {
@@ -373,22 +318,24 @@
   }
 
   function renderMessages(list) {
-    const me = myName || "";
+    if (!Array.isArray(list)) return;
+
     chatBox.innerHTML = "";
 
     for (const m of list) {
       const row = document.createElement("div");
-      row.className = "msg-row" + (m.sender === me ? " me" : "");
+      const isMe = meName && m.sender === meName;
+      row.className = "msg-row" + (isMe ? " me" : "");
 
       const bubble = document.createElement("div");
-      bubble.className = "bubble" + (m.sender === me ? " me" : "");
+      bubble.className = "bubble" + (isMe ? " me" : "");
 
       const meta = document.createElement("div");
       meta.className = "msg-meta";
       const t = new Date(m.timestamp);
       const timeStr = t.toLocaleTimeString("uk-UA", {
         hour: "2-digit",
-        minute: "2-digit",
+        minute: "2-digit"
       });
       meta.textContent = `${m.sender} · ${timeStr}`;
 
@@ -402,18 +349,23 @@
       chatBox.appendChild(row);
     }
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+    // Автоскрол тільки якщо є що скролити
+    if (chatBox.scrollHeight > chatBox.clientHeight) {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
   }
 
   async function sendMessage() {
+    if (!meName) return;
+
     const text = msgInput.value.trim();
-    if (!myName || !text) return;
+    if (!text) return;
 
     try {
-      await fetch("/messages", {
+      await fetch(API_URL_MESSAGES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender: myName, text }),
+        body: JSON.stringify({ sender: meName, text })
       });
       msgInput.value = "";
       await fetchMessages();
@@ -421,6 +373,8 @@
       console.error("Failed to send message", e);
     }
   }
+
+  // ------------- Init -------------
 
   sendBtn.addEventListener("click", sendMessage);
   msgInput.addEventListener("keydown", (e) => {
@@ -430,8 +384,26 @@
     }
   });
 
-  initGate();
-  setInterval(fetchMessages, 3000);
+  loginBtn.addEventListener("click", handleLoginSubmit);
+  loginAnswer.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleLoginSubmit();
+    }
+  });
+
+  (function init() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "Vova" || saved === "Mari") {
+      meName = saved;
+      showChat();
+      fetchMessages();
+    } else {
+      showLogin();
+    }
+
+    setInterval(fetchMessages, 3000);
+  })();
 </script>
 </body>
 </html>
