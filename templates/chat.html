@@ -9,61 +9,29 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
             margin: 0;
-            height: 100vh;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             background: #eef1ff;
             color: #0f172a;
         }
 
-        .app-root {
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .chat-shell {
-            width: min(900px, 100vw - 24px);
-            height: min(700px, 100vh - 24px);
-            background: #ffffff;
-            border-radius: 26px;
-            border: 1px solid rgba(148, 163, 184, 0.55);
-            box-shadow:
-                0 24px 60px rgba(15, 23, 42, 0.18),
-                0 0 0 1px rgba(148, 163, 184, 0.35);
+        /* Весь екран — сторінка чату */
+        .page {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
-        @media (max-width: 640px) {
-            .app-root {
-                align-items: stretch;
-                justify-content: stretch;
-            }
-
-            .chat-shell {
-                width: 100vw;
-                height: 100vh;
-                border-radius: 0;
-                border: none;
-                box-shadow: none;
-            }
-        }
-
-        .chat-main {
+        /* Блок з повідомленнями */
+        #chatBox {
             flex: 1;
-            padding: 12px 14px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .chat-box {
-            flex: 1;
+            margin: 8px;
             border-radius: 18px;
             border: 1px solid #dbeafe;
             background: #f4f6ff;
@@ -113,16 +81,18 @@
             line-height: 1.25;
         }
 
+        /* Низ екрану: інпут + кнопка */
         .input-row {
-            padding: 10px 14px 14px;
+            padding: 8px;
+            padding-bottom: 10px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: flex-end;
         }
 
         .textarea {
             flex: 1;
-            min-height: 48px;
+            min-height: 44px;
             max-height: 120px;
             border-radius: 999px;
             border: 1px solid #bfdbfe;
@@ -167,7 +137,7 @@
         .login-overlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at top, rgba(148, 163, 184, 0.2), rgba(15, 23, 42, 0.95));
+            background: radial-gradient(circle at top, rgba(148, 163, 184, 0.25), rgba(15, 23, 42, 0.95));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -188,7 +158,7 @@
         }
 
         .login-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: #0f172a;
         }
@@ -217,16 +187,12 @@
     </style>
 </head>
 <body>
-<div class="app-root">
-    <div class="chat-shell">
-        <div class="chat-main">
-            <div id="chatBox" class="chat-box"></div>
-        </div>
+<div class="page">
+    <div id="chatBox"></div>
 
-        <div class="input-row">
-            <textarea id="messageInput" class="textarea" placeholder="Напиши повідомлення…"></textarea>
-            <button id="sendBtn" class="btn">Send</button>
-        </div>
+    <div class="input-row">
+        <textarea id="messageInput" class="textarea" placeholder="Напиши повідомлення…"></textarea>
+        <button id="sendBtn" class="btn">Send</button>
     </div>
 </div>
 
@@ -243,6 +209,7 @@
 
 <script>
     let sender = null;
+
     const chatBox = document.getElementById("chatBox");
     const msgInput = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
@@ -250,6 +217,8 @@
     const loginOverlay = document.getElementById("loginOverlay");
     const loginInput = document.getElementById("loginAnswer");
     const loginBtn = document.getElementById("loginBtn");
+
+    // --------- LOGIN LOGIC ---------
 
     function initSenderFromStorage() {
         const saved = localStorage.getItem("chat_sender");
@@ -264,10 +233,10 @@
 
         let resolvedSender = null;
         if (raw === "mari") {
-            // Ти написав "Mari" → ти Vova
+            // написали "Mari" -> пишемо як Vova
             resolvedSender = "Vova";
         } else if (raw === "vova") {
-            // Ти написав "Vova" → ти Mari
+            // написали "Vova" -> пишемо як Mari
             resolvedSender = "Mari";
         } else {
             alert("Please answer with Vova or Mari.");
@@ -290,6 +259,8 @@
     });
 
     initSenderFromStorage();
+
+    // --------- CHAT LOGIC ---------
 
     async function fetchMessages() {
         try {
@@ -365,6 +336,7 @@
         fetchMessages();
         setInterval(fetchMessages, 3000);
     } else {
+        // як тільки пройдемо логін, почне підтягуватися історія
         setInterval(() => {
             if (sender) fetchMessages();
         }, 3000);
