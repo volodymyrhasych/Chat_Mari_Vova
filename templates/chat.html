@@ -16,18 +16,17 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
       background: #eef2ff;
       color: #111827;
     }
 
-    /* ===== ГОЛОВНИЙ КОНТЕЙНЕР ===== */
+    /* ===== ГОЛОВНИЙ КОНТЕЙНЕР (по висоті екрана) ===== */
 
     .app-root {
-      height: 100%;
+      min-height: 100vh; /* тягнемо на всю висоту екрану */
       display: flex;
-      justify-content: center;
-      align-items: stretch;
+      flex-direction: column; /* головна вісь = вертикаль */
       padding: env(safe-area-inset-top, 8px)
                env(safe-area-inset-right, 8px)
                env(safe-area-inset-bottom, 8px)
@@ -35,8 +34,9 @@
     }
 
     .chat-shell {
-      flex: 1;
+      flex: 1;                 /* забирає весь доступний простір по висоті */
       max-width: 960px;
+      margin: 0 auto;          /* центруємо по горизонталі */
       border-radius: 22px;
       background: #f9fafb;
       border: 1px solid rgba(148, 163, 184, 0.6);
@@ -44,18 +44,18 @@
         0 18px 45px rgba(15, 23, 42, 0.18),
         0 0 0 1px rgba(148, 163, 184, 0.35);
       display: flex;
-      flex-direction: column;
+      flex-direction: column;  /* всередині: історія + інпут вертикально */
       padding: 10px 10px 12px;
-      min-height: 100;
+      min-height: 0;           /* дозволяємо стискатися при клавіатурі */
     }
 
     /* ===== ОБЛАСТЬ ІСТОРІЇ ===== */
 
     .chat-history {
-      flex: 1;
-      min-height: 100;
+      flex: 1;                 /* займає все, що лишилось над інпутом */
+      min-height: 0;           /* важливо: щоб працював overflow */
       border-radius: 18px;
-      background: #ffffff;;
+      background: #ffffff;
       padding: 10px 10px 12px;
       overflow-y: auto;
       display: flex;
@@ -88,10 +88,10 @@
       margin-bottom: 2px;
     }
 
-    /* ===== ПОЛЕ ВВОДУ ===== */
+    /* ===== ПОЛЕ ВВОДУ (пришите до низу) ===== */
 
     .composer {
-      margin-top: 80px;
+      margin-top: 8px;         /* невеликий відступ від історії */
       display: flex;
       gap: 8px;
       align-items: center;
