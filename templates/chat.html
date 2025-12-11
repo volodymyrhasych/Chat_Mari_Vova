@@ -16,17 +16,18 @@
     }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       background: #eef2ff;
       color: #111827;
     }
 
-    /* ===== ГОЛОВНИЙ КОНТЕЙНЕР (по висоті екрана) ===== */
+    /* ================= ГОЛОВНИЙ КОНТЕЙНЕР ================= */
 
     .app-root {
-      min-height: 100vh; /* тягнемо на всю висоту екрану */
+      height: 100vh; /* ключовий момент: реальна висота екрану */
       display: flex;
-      flex-direction: column; /* головна вісь = вертикаль */
+      justify-content: center;
+      align-items: center;
       padding: env(safe-area-inset-top, 8px)
                env(safe-area-inset-right, 8px)
                env(safe-area-inset-bottom, 8px)
@@ -34,9 +35,9 @@
     }
 
     .chat-shell {
-      flex: 1;                 /* забирає весь доступний простір по висоті */
+      flex: 1;
       max-width: 960px;
-      margin: 0 auto;          /* центруємо по горизонталі */
+      height: min(640px, 100%); /* фіксована картка, не росте безкінечно */
       border-radius: 22px;
       background: #f9fafb;
       border: 1px solid rgba(148, 163, 184, 0.6);
@@ -44,18 +45,18 @@
         0 18px 45px rgba(15, 23, 42, 0.18),
         0 0 0 1px rgba(148, 163, 184, 0.35);
       display: flex;
-      flex-direction: column;  /* всередині: історія + інпут вертикально */
+      flex-direction: column;
       padding: 10px 10px 12px;
-      min-height: 0;           /* дозволяємо стискатися при клавіатурі */
+      gap: 10px;
     }
 
-    /* ===== ОБЛАСТЬ ІСТОРІЇ ===== */
+    /* ================= ІСТОРІЯ ЧАТУ ================= */
 
     .chat-history {
-      flex: 1;                 /* займає все, що лишилось над інпутом */
-      min-height: 0;           /* важливо: щоб працював overflow */
+      flex: 1;
+      min-height: 0; /* дає нормально скролитись всередині flex-контейнера */
       border-radius: 18px;
-      background: #ffffff;
+      background: #ffffff; /* чисто білий фон */
       padding: 10px 10px 12px;
       overflow-y: auto;
       display: flex;
@@ -88,10 +89,10 @@
       margin-bottom: 2px;
     }
 
-    /* ===== ПОЛЕ ВВОДУ (пришите до низу) ===== */
+    /* ================= ПОЛЕ ВВОДУ ================= */
 
     .composer {
-      margin-top: 8px;         /* невеликий відступ від історії */
+      margin-top: 4px;
       display: flex;
       gap: 8px;
       align-items: center;
@@ -137,7 +138,7 @@
         0 0 0 1px rgba(30, 64, 175, 0.8);
     }
 
-    /* ===== ЛОГІН-ЕКРАН ===== */
+    /* ================= ЛОГІН-ЕКРАН ================= */
 
     #login-screen {
       position: fixed;
@@ -211,15 +212,19 @@
         0 0 0 1px rgba(30, 64, 175, 0.8);
     }
 
+    /* ================= MOBILE ================= */
+
     @media (max-width: 640px) {
       .chat-shell {
-        border-radius: 0;
+        border-radius: 20px;
+        height: calc(100% - 16px);
       }
+
       .app-root {
-        padding: env(safe-area-inset-top, 0)
-                 env(safe-area-inset-right, 0)
-                 env(safe-area-inset-bottom, 0)
-                 env(safe-area-inset-left, 0);
+        padding: env(safe-area-inset-top, 8px)
+                 env(safe-area-inset-right, 8px)
+                 env(safe-area-inset-bottom, 8px)
+                 env(safe-area-inset-left, 8px);
       }
     }
   </style>
