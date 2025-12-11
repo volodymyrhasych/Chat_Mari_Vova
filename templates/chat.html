@@ -3,24 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <title>Mini Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
     * {
       box-sizing: border-box;
     }
-    html, body {
+
+    html,
+    body {
       height: 100%;
       margin: 0;
       padding: 0;
     }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       background: #eef2ff;
       color: #111827;
     }
-    /* ================= ГОЛОВНИЙ КОНТЕЙНЕР ================= */
+
+    /* ===== ГОЛОВНИЙ КОНТЕЙНЕР ===== */
+
     .app-root {
-      height: 100dvh; /* Use dynamic viewport height to handle keyboard */
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -29,10 +34,10 @@
                env(safe-area-inset-bottom, 8px)
                env(safe-area-inset-left, 8px);
     }
+
     .chat-shell {
       flex: 1;
       max-width: 960px;
-      height: min(640px, 100%); /* фіксована картка, не росте безкінечно */
       border-radius: 22px;
       background: #f9fafb;
       border: 1px solid rgba(148, 163, 184, 0.6);
@@ -42,25 +47,29 @@
       display: flex;
       flex-direction: column;
       padding: 10px 10px 12px;
-      gap: 10px;
+      min-height: 0;
     }
-    /* ================= ІСТОРІЯ ЧАТУ ================= */
+
+    /* ===== ОБЛАСТЬ ІСТОРІЇ ===== */
+
     .chat-history {
       flex: 1;
-      min-height: 0; /* дає нормально скролитись всередині flex-контейнера */
+      min-height: 0;
       border-radius: 18px;
-      background: #ffffff; /* чисто білий фон */
+      background: #ffffff;
       padding: 10px 10px 12px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
+
     .msg-row {
       display: flex;
       width: 100%;
       justify-content: flex-end;
     }
+
     .msg-bubble {
       max-width: 78%;
       border-radius: 16px;
@@ -73,18 +82,22 @@
       word-wrap: break-word;
       white-space: pre-wrap;
     }
+
     .msg-meta {
       font-size: 11px;
       opacity: 0.75;
       margin-bottom: 2px;
     }
-    /* ================= ПОЛЕ ВВОДУ ================= */
+
+    /* ===== ПОЛЕ ВВОДУ ===== */
+
     .composer {
-      margin-top: 4px;
+      margin-top: 12px;
       display: flex;
       gap: 8px;
       align-items: center;
     }
+
     .composer-input {
       flex: 1;
       border-radius: 999px;
@@ -96,11 +109,13 @@
       resize: none;
       max-height: 120px;
     }
+
     .composer-input:focus {
       border-color: #3b82f6;
       box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
       background: #ffffff;
     }
+
     .send-btn {
       border-radius: 999px;
       border: none;
@@ -115,13 +130,16 @@
         0 0 0 1px rgba(30, 64, 175, 0.7);
       white-space: nowrap;
     }
+
     .send-btn:active {
       transform: translateY(1px);
       box-shadow:
         0 8px 18px rgba(37, 99, 235, 0.6),
         0 0 0 1px rgba(30, 64, 175, 0.8);
     }
-    /* ================= ЛОГІН-ЕКРАН ================= */
+
+    /* ===== ЛОГІН-ЕКРАН ===== */
+
     #login-screen {
       position: fixed;
       inset: 0;
@@ -129,9 +147,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(circle at top, rgba(191, 219, 254, 0.55), rgba(15, 23, 42, 0.82));
+      background: radial-gradient(circle at top,
+        rgba(191, 219, 254, 0.55),
+        rgba(15, 23, 42, 0.82));
       padding: 16px;
     }
+
     .login-card {
       width: 100%;
       max-width: 380px;
@@ -145,12 +166,14 @@
       flex-direction: column;
       gap: 12px;
     }
+
     .login-title {
       font-size: 22px;
       font-weight: 700;
       color: #111827;
       text-align: left;
     }
+
     .login-input {
       width: 100%;
       border-radius: 999px;
@@ -160,11 +183,13 @@
       font-size: 15px;
       outline: none;
     }
+
     .login-input:focus {
       border-color: #3b82f6;
       box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
       background: #ffffff;
     }
+
     .login-button {
       align-self: flex-end;
       margin-top: 4px;
@@ -181,25 +206,33 @@
         0 0 0 1px rgba(30, 64, 175, 0.7);
       white-space: nowrap;
     }
+
     .login-button:active {
       transform: translateY(1px);
       box-shadow:
         0 8px 18px rgba(37, 99, 235, 0.6),
         0 0 0 1px rgba(30, 64, 175, 0.8);
     }
-    /* ================= MOBILE ================= */
+
+    /* ===== МОБІЛЬНИЙ РЕЖИМ ===== */
+
     @media (max-width: 640px) {
-      .chat-shell {
-        border-radius: 20px;
-        height: 100%;
-      }
       .app-root {
-        padding: env(safe-area-inset-top, 8px)
-                 env(safe-area-inset-right, 8px)
-                 env(safe-area-inset-bottom, 8px)
-                 env(safe-area-inset-left, 8px);
-        align-items: flex-start;
-        justify-content: flex-start;
+        height: 100vh;
+        justify-content: flex-end;   /* притискаємо картку донизу */
+        align-items: stretch;
+        padding: env(safe-area-inset-top, 0)
+                 env(safe-area-inset-right, 0)
+                 env(safe-area-inset-bottom, 0)
+                 env(safe-area-inset-left, 0);
+      }
+
+      .chat-shell {
+        max-width: 100%;
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
       }
     }
   </style>
@@ -208,6 +241,7 @@
 <div class="app-root">
   <div class="chat-shell">
     <div id="chat" class="chat-history"></div>
+
     <div class="composer">
       <textarea
         id="message-input"
@@ -218,6 +252,7 @@
     </div>
   </div>
 </div>
+
 <!-- Логін-екран -->
 <div id="login-screen">
   <div class="login-card">
@@ -230,16 +265,21 @@
     <button id="love-button" class="login-button">Continue</button>
   </div>
 </div>
+
 <script>
   const chatBox = document.getElementById("chat");
   const msgInput = document.getElementById("message-input");
   const sendBtn = document.getElementById("send-btn");
+
   const loginScreen = document.getElementById("login-screen");
   const loveInput = document.getElementById("love-input");
   const loveButton = document.getElementById("love-button");
+
   const STORAGE_KEY = "miniChatName";
   let currentSender = null;
+
   /* ====== ЛОГІН-ЛОГІКА ====== */
+
   function resolveNameFromLove(answer) {
     if (!answer) return null;
     const a = answer.trim().toLowerCase();
@@ -247,6 +287,7 @@
     if (a === "mari") return "Vova";
     return null;
   }
+
   function initLogin() {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored && stored.trim()) {
@@ -254,7 +295,9 @@
       loginScreen.style.display = "none";
       return;
     }
+
     loginScreen.style.display = "flex";
+
     function handleLoveSubmit() {
       const raw = loveInput.value;
       const name = resolveNameFromLove(raw);
@@ -268,6 +311,7 @@
       loginScreen.style.display = "none";
       fetchMessages();
     }
+
     loveButton.onclick = handleLoveSubmit;
     loveInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -276,14 +320,18 @@
       }
     });
   }
+
   /* ====== РЕНДЕР ПОВІДОМЛЕНЬ ====== */
+
   function renderMessages(list) {
     chatBox.innerHTML = "";
     for (const m of list) {
       const row = document.createElement("div");
       row.className = "msg-row";
+
       const bubble = document.createElement("div");
       bubble.className = "msg-bubble";
+
       const meta = document.createElement("div");
       meta.className = "msg-meta";
       const t = new Date(m.timestamp);
@@ -292,8 +340,10 @@
         minute: "2-digit",
       });
       meta.textContent = `${m.sender} · ${timeStr}`;
+
       const text = document.createElement("div");
       text.textContent = m.text;
+
       bubble.appendChild(meta);
       bubble.appendChild(text);
       row.appendChild(bubble);
@@ -301,6 +351,7 @@
     }
     chatBox.scrollTop = chatBox.scrollHeight;
   }
+
   async function fetchMessages() {
     try {
       const res = await fetch("/messages?limit=100");
@@ -310,6 +361,7 @@
       console.error("Failed to fetch messages", e);
     }
   }
+
   async function sendMessage() {
     const text = msgInput.value.trim();
     if (!text || !currentSender) return;
@@ -325,6 +377,7 @@
       console.error("Failed to send message", e);
     }
   }
+
   sendBtn.addEventListener("click", sendMessage);
   msgInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -332,6 +385,7 @@
       sendMessage();
     }
   });
+
   initLogin();
   fetchMessages();
   setInterval(fetchMessages, 3000);
