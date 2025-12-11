@@ -4,41 +4,61 @@
   <meta charset="UTF-8" />
   <title>Mini Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
   <style>
     * {
       box-sizing: border-box;
     }
 
-    html, body {
-      height: 100%;
+    body {
       margin: 0;
-      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #eef2ff;
+      color: #111827;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: #f5f7ff;
-      color: #111827;
+    /* Обгортка всього застосунку */
+    .app-shell {
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 24px;
+      padding: 16px;
     }
 
-    /* Основна картка чату */
-    .chat-shell {
-      width: min(960px, 100%);
-      height: min(640px, 100%);
+    /* Основна картка чату (десктоп) */
+    .chat-card {
+      width: 100%;
+      max-width: 960px;
+      height: calc(100vh - 32px); /* мінус padding app-shell */
       border-radius: 26px;
       background: #ffffff;
       border: 2px solid #bfdbfe;
       box-shadow:
         0 20px 50px rgba(15, 23, 42, 0.15),
-        0 0 0 1px rgba(148, 163, 184, 0.35);
-      padding: 14px 16px 14px;
+        0 0 0 1px rgba(148, 163, 184, 0.4);
+      padding: 16px 18px 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 2px 4px 6px;
+    }
+
+    .chat-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .chat-participants {
+      font-size: 13px;
+      color: #6b7280;
     }
 
     .label {
@@ -46,21 +66,28 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: #6b7280;
-      margin-left: 2px;
+      margin-bottom: 4px;
     }
 
-    .history-wrapper {
+    .field-col {
+      display: flex;
+      flex-direction: column;
       flex: 1;
       min-height: 0;
-      border-radius: 18px;
+    }
+
+    .chat-wrapper {
+      flex: 1;
+      min-height: 0;
+      border-radius: 20px;
       border: 1px solid #bfdbfe;
       background: #eff6ff;
-      padding: 8px 8px 10px;
+      padding: 10px 10px 12px;
       overflow-y: auto;
+      font-size: 13px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      scroll-behavior: smooth;
     }
 
     .msg-row {
@@ -90,7 +117,7 @@
 
     .msg-meta {
       font-size: 11px;
-      opacity: 0.75;
+      opacity: 0.7;
       margin-bottom: 2px;
     }
 
@@ -105,7 +132,7 @@
       display: flex;
       gap: 10px;
       align-items: flex-end;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .textarea {
@@ -150,42 +177,39 @@
         0 0 0 1px rgba(30, 64, 175, 0.7);
     }
 
-    /* ----- Логін-оверлей ----- */
+    /* ---------- Login overlay ---------- */
+
     .login-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.35);
+      background: rgba(15, 23, 42, 0.1);
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       padding: 16px;
-      z-index: 20;
       backdrop-filter: blur(6px);
+      z-index: 20;
     }
 
     .login-card {
-      width: min(380px, 100%);
+      width: 100%;
+      max-width: 420px;
       border-radius: 24px;
       background: #ffffff;
-      padding: 20px 20px 18px;
+      border: 1px solid #bfdbfe;
       box-shadow:
-        0 20px 50px rgba(15, 23, 42, 0.2),
-        0 0 0 1px rgba(148, 163, 184, 0.3);
+        0 20px 50px rgba(15, 23, 42, 0.15),
+        0 0 0 1px rgba(148, 163, 184, 0.35);
+      padding: 22px 22px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
     }
 
     .login-question {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       color: #111827;
-    }
-
-    .login-label {
-      font-size: 13px;
-      color: #4b5563;
-      margin-bottom: 4px;
     }
 
     .login-input {
@@ -193,140 +217,167 @@
       border-radius: 999px;
       border: 1px solid #bfdbfe;
       background: #f9fbff;
-      padding: 9px 14px;
-      font-size: 14px;
-      color: #111827;
+      padding: 10px 14px;
+      font-size: 15px;
       outline: none;
     }
 
     .login-input:focus {
       border-color: #3b82f6;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
       background: #ffffff;
     }
 
     .login-btn {
-      margin-top: 6px;
-      align-self: flex-end;
       border-radius: 999px;
       border: none;
-      padding: 9px 18px;
+      padding: 10px 18px;
       font-size: 14px;
       font-weight: 600;
       background: linear-gradient(135deg, #3b82f6, #60a5fa);
       color: #f9fafb;
       cursor: pointer;
+      align-self: flex-end;
       box-shadow:
-        0 10px 24px rgba(37, 99, 235, 0.45),
+        0 12px 30px rgba(37, 99, 235, 0.5),
         0 0 0 1px rgba(30, 64, 175, 0.6);
     }
 
     .login-btn:active {
       transform: translateY(1px);
       box-shadow:
-        0 5px 14px rgba(37, 99, 235, 0.5),
+        0 6px 16px rgba(37, 99, 235, 0.55),
         0 0 0 1px rgba(30, 64, 175, 0.7);
     }
 
-    /* ----- Мобільна адаптація ----- */
+    .hidden {
+      display: none !important;
+    }
+
+    /* ---------- Мобільний режим: картка на весь екран ---------- */
+
     @media (max-width: 640px) {
-      body {
+      .app-shell {
         padding: 0;
-        align-items: stretch;
       }
-      .chat-shell {
-        width: 100%;
-        height: 100%;
+
+      .chat-card {
+        max-width: none;
+        height: 100vh;
         border-radius: 0;
+        border: none;
         box-shadow: none;
-        border-left: none;
-        border-right: none;
-        padding-top: calc(10px + env(safe-area-inset-top, 0px));
-        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        padding: 10px 10px 12px;
       }
-      .login-card {
-        border-radius: 18px;
+
+      .top-bar {
+        padding: 2px 2px 4px;
       }
     }
   </style>
 </head>
 <body>
-<div class="chat-shell">
-  <div class="label">Історія</div>
-  <div id="chat" class="history-wrapper"></div>
-
-  <div class="input-row">
-    <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
-    <button id="sendBtn" class="btn">Send</button>
-  </div>
-</div>
 
 <!-- Логін-екран -->
 <div id="loginOverlay" class="login-overlay">
   <div class="login-card">
     <div class="login-question">Who do you love?</div>
-    <div class="login-label">Answer in English with <strong>Vova</strong> or <strong>Mari</strong>.</div>
     <input id="loginAnswer" class="login-input" autocomplete="off" />
     <button id="loginBtn" class="login-btn">Continue</button>
   </div>
 </div>
 
+<!-- Основний інтерфейс чату -->
+<div id="appShell" class="app-shell hidden">
+  <div class="chat-card">
+    <div class="top-bar">
+      <div class="chat-title">Mini Chat</div>
+      <div class="chat-participants">
+        <span id="meLabel">Vova</span> · <span id="peerLabel">Mari</span>
+      </div>
+    </div>
+
+    <div class="field-col">
+      <div class="label">Історія</div>
+      <div id="chat" class="chat-wrapper"></div>
+    </div>
+
+    <div class="input-row">
+      <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
+      <button id="sendBtn" class="btn">Send</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const chatBox = document.getElementById("chat");
-  const msgInput = document.getElementById("message");
-  const sendBtn = document.getElementById("sendBtn");
-
   const loginOverlay = document.getElementById("loginOverlay");
-  const loginInput = document.getElementById("loginAnswer");
-  const loginBtn = document.getElementById("loginBtn");
+  const loginInput   = document.getElementById("loginAnswer");
+  const loginBtn     = document.getElementById("loginBtn");
 
-  let me = null;        // моє ім'я: "Vova" або "Mari"
-  let partner = null;   // ім'я іншого
+  const appShell = document.getElementById("appShell");
+  const chatBox  = document.getElementById("chat");
+  const msgInput = document.getElementById("message");
+  const sendBtn  = document.getElementById("sendBtn");
 
-  function normalizeName(raw) {
-    if (!raw) return "";
-    const t = raw.trim().toLowerCase();
-    if (t === "vova" || t === "v" || t === "vov") return "Vova";
-    if (t === "mari" || t === "mary" || t === "m") return "Mari";
-    return "";
+  const meLabel   = document.getElementById("meLabel");
+  const peerLabel = document.getElementById("peerLabel");
+
+  let meName   = null;
+  let peerName = null;
+
+  function applyNames() {
+    meLabel.textContent   = meName;
+    peerLabel.textContent = peerName;
   }
 
-  function saveIdentity(nameMe, namePartner) {
-    localStorage.setItem("miniChatMe", nameMe);
-    localStorage.setItem("miniChatPartner", namePartner);
-  }
-
-  function loadIdentity() {
-    const storedMe = localStorage.getItem("miniChatMe");
-    const storedPartner = localStorage.getItem("miniChatPartner");
-    if (storedMe && storedPartner) {
-      me = storedMe;
-      partner = storedPartner;
-      loginOverlay.style.display = "none";
-    }
-  }
-
-  loginBtn.addEventListener("click", () => {
-    const normalized = normalizeName(loginInput.value);
-    if (!normalized) return;
-
-    if (normalized === "Vova") {
-      me = "Vova";
-      partner = "Mari";
-    } else {
-      me = "Mari";
-      partner = "Vova";
-    }
-
-    saveIdentity(me, partner);
-    loginOverlay.style.display = "none";
+  function finishLogin() {
+    loginOverlay.classList.add("hidden");
+    appShell.classList.remove("hidden");
+    applyNames();
     fetchMessages();
-  });
+  }
 
+  function handleLogin() {
+    const raw = (loginInput.value || "").trim().toLowerCase();
+
+    if (raw === "vova") {
+      meName   = "Mari";
+      peerName = "Vova";
+    } else if (raw === "mari") {
+      meName   = "Vova";
+      peerName = "Mari";
+    } else {
+      alert("Answer with Vova or Mari ❤️");
+      return;
+    }
+
+    localStorage.setItem("meName", meName);
+    localStorage.setItem("peerName", peerName);
+
+    finishLogin();
+  }
+
+  // Перевіряємо, чи вже є логін
+  (function initLogin() {
+    const storedMe   = localStorage.getItem("meName");
+    const storedPeer = localStorage.getItem("peerName");
+
+    if (storedMe && storedPeer) {
+      meName   = storedMe;
+      peerName = storedPeer;
+      finishLogin();
+    } else {
+      loginOverlay.classList.remove("hidden");
+      appShell.classList.add("hidden");
+      loginInput.focus();
+    }
+  })();
+
+  loginBtn.addEventListener("click", handleLogin);
   loginInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      loginBtn.click();
+      handleLogin();
     }
   });
 
@@ -341,20 +392,24 @@
   }
 
   function renderMessages(list) {
-    const currentUser = me || localStorage.getItem("miniChatMe") || "Me";
+    const me = meName || "Me";
     chatBox.innerHTML = "";
 
     for (const m of list) {
       const row = document.createElement("div");
-      row.className = "msg-row" + (m.sender === currentUser ? " me" : "");
+      const isMe = m.sender === me;
+      row.className = "msg-row" + (isMe ? " me" : "");
 
       const bubble = document.createElement("div");
-      bubble.className = "bubble" + (m.sender === currentUser ? " me" : "");
+      bubble.className = "bubble" + (isMe ? " me" : "");
 
       const meta = document.createElement("div");
       meta.className = "msg-meta";
       const t = new Date(m.timestamp);
-      const timeStr = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+      const timeStr = t.toLocaleTimeString("uk-UA", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
       meta.textContent = `${m.sender} · ${timeStr}`;
 
       const text = document.createElement("div");
@@ -372,15 +427,15 @@
 
   async function sendMessage() {
     const text = msgInput.value.trim();
-    const currentUser = me || localStorage.getItem("miniChatMe");
+    if (!text) return;
 
-    if (!currentUser || !text) return;
+    const sender = meName || "Me";
 
     try {
       await fetch("/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender: currentUser, text }),
+        body: JSON.stringify({ sender, text }),
       });
       msgInput.value = "";
       await fetchMessages();
@@ -397,15 +452,7 @@
     }
   });
 
-  loadIdentity();
-  if (!me) {
-    loginOverlay.style.display = "flex";
-    loginInput.focus();
-  } else {
-    loginOverlay.style.display = "none";
-    fetchMessages();
-  }
-
+  // Перший фетч + поллінг
   setInterval(fetchMessages, 3000);
 </script>
 </body>
