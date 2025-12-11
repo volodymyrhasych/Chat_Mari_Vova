@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -20,50 +19,74 @@
             color: #111827;
         }
 
-        .card {
+        /* --- LOGIN SCREEN --- */
+        .welcome-screen {
+            width: 360px;
+            background: #ffffff;
+            padding: 26px;
+            border-radius: 24px;
+            border: 2px solid #bfdbfe;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .welcome-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .welcome-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid #bfdbfe;
+            background: #f9fbff;
+            font-size: 15px;
+            outline: none;
+        }
+        .welcome-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px rgba(59,130,246,0.35);
+            background: #ffffff;
+        }
+
+        .welcome-btn {
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: white;
+        }
+
+        /* --- CHAT LAYOUT --- */
+
+        .chat-card {
             width: min(900px, 100vw - 32px);
-            height: min(640px, 100vh - 32px);
+            height: min(680px, 100vh - 32px);
             border-radius: 28px;
             background: #ffffff;
             border: 2px solid #bfdbfe;
-            box-shadow:
-                0 20px 50px rgba(15, 23, 42, 0.15),
-                0 0 0 1px rgba(148, 163, 184, 0.4);
-            padding: 18px 20px 18px;
-            display: flex;
+            display: none;
             flex-direction: column;
-            gap: 10px;
-        }
-
-        .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        .title {
-            font-weight: 600;
-        }
-
-        .identity-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: #1d4ed8;
-        }
-
-        .field-row {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            padding: 20px;
+            gap: 12px;
         }
 
         .label {
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
             color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .06em;
         }
 
         .chat-wrapper {
@@ -72,196 +95,91 @@
             border-radius: 20px;
             border: 1px solid #bfdbfe;
             background: #eff6ff;
-            padding: 10px 10px 12px;
+            padding: 12px;
             overflow-y: auto;
-            font-size: 13px;
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
         .msg-row {
-            display: flex;
             width: 100%;
+            display: flex;
         }
-
         .msg-row.me {
             justify-content: flex-end;
         }
 
         .bubble {
-            display: inline-block;
             max-width: 75%;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 14px;
             background: #dbeafe;
             border: 1px solid #93c5fd;
             color: #111827;
         }
-
         .bubble.me {
             background: #3b82f6;
             border-color: #1d4ed8;
-            color: #eff6ff;
+            color: white;
         }
 
         .msg-meta {
             font-size: 11px;
-            opacity: 0.7;
-            margin-bottom: 2px;
-        }
-
-        .msg-text {
-            font-size: 13px;
-            line-height: 1.25;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            opacity: 0.8;
         }
 
         .input-row {
             display: flex;
             gap: 10px;
-            align-items: flex-end;
-            margin-top: 4px;
         }
 
         .textarea {
             flex: 1;
-            min-height: 56px;
-            max-height: 110px;
+            padding: 12px;
             border-radius: 16px;
             border: 1px solid #bfdbfe;
             background: #f9fbff;
-            padding: 10px 12px;
-            font-size: 14px;
-            color: #111827;
             resize: none;
+            font-size: 14px;
             outline: none;
-        }
-
-        .textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
-            background: #ffffff;
         }
 
         .btn {
-            border-radius: 999px;
+            padding: 12px 18px;
+            border-radius: 16px;
+            background: linear-gradient(135deg,#3b82f6,#60a5fa);
+            color: white;
             border: none;
-            padding: 11px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: #f9fafb;
             cursor: pointer;
-            box-shadow:
-                0 12px 30px rgba(37, 99, 235, 0.5),
-                0 0 0 1px rgba(30, 64, 175, 0.6);
-            white-space: nowrap;
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-            box-shadow:
-                0 6px 16px rgba(37, 99, 235, 0.55),
-                0 0 0 1px rgba(30, 64, 175, 0.7);
-        }
-
-        /* --------- Love-login overlay ---------- */
-
-        .login-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(6px);
-        }
-
-        .login-card {
-            width: min(320px, 100vw - 40px);
-            border-radius: 18px;
-            background: #ffffff;
-            border: 1px solid #bfdbfe;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
-            padding: 16px 18px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .login-title {
-            font-size: 15px;
             font-weight: 600;
-            color: #111827;
-        }
-
-        .login-sub {
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        .login-input {
-            width: 100%;
-            border-radius: 999px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            padding: 8px 12px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .login-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
-            background: #ffffff;
-        }
-
-        .login-btn {
-            margin-top: 4px;
-            align-self: flex-end;
-            border-radius: 999px;
-            border: none;
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: #f9fafb;
-            cursor: pointer;
-        }
-
-        .login-error {
-            font-size: 11px;
-            color: #b91c1c;
-            min-height: 14px;
-        }
-
-        .hidden {
-            display: none;
         }
 
         @media (max-width: 640px) {
-            .card {
-                border-radius: 0;
+            .chat-card {
                 width: 100vw;
                 height: 100vh;
-                max-height: none;
-                max-width: none;
-                padding: 12px 12px 14px;
+                border-radius: 0;
             }
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="top-row">
-        <div class="title">Mini Chat</div>
-        <div id="identityLabel" class="identity-label"></div>
-    </div>
 
-    <div class="field-row" style="flex: 1; min-height: 0;">
-        <div class="label">Історія</div>
+<!-- LOGIN SCREEN -->
+<div id="welcome" class="welcome-screen">
+    <div class="welcome-title">One small question 💌</div>
+    <div class="welcome-text">Who do you love?</div>
+
+    <input id="who-input" class="welcome-input" />
+
+    <button id="who-btn" class="welcome-btn">Continue</button>
+</div>
+
+<!-- CHAT UI -->
+<div id="chat-ui" class="chat-card">
+    <div>
+        <div class="label">ІСТОРІЯ</div>
         <div id="chat" class="chat-wrapper"></div>
     </div>
 
@@ -271,199 +189,105 @@
     </div>
 </div>
 
-<!-- Love-login оверлей -->
-<div id="loginOverlay" class="login-overlay hidden">
-    <div class="login-card">
-        <div class="login-title">One small question 💌</div>
-        <div class="login-sub">
-            Type the answer in English: <strong>Who do you love?</strong>
-            <br/>Answer with <strong>Vova</strong> or <strong>Mari</strong>.
-        </div>
-        <input id="answerInput" class="login-input" placeholder="Vova / Mari" />
-        <div id="loginError" class="login-error"></div>
-        <button id="loginBtn" class="login-btn">Continue</button>
-    </div>
-</div>
 
 <script>
-    const msgInput = document.getElementById("message");
+    let sender = null;
+
+    const welcome = document.getElementById("welcome");
+    const chatUI = document.getElementById("chat-ui");
+    const whoInput = document.getElementById("who-input");
+    const whoBtn = document.getElementById("who-btn");
+
+    // Load saved sender
+    const saved = localStorage.getItem("sender");
+    if (saved) {
+        sender = saved;
+        welcome.style.display = "none";
+        chatUI.style.display = "flex";
+    }
+
+    whoBtn.addEventListener("click", () => {
+        const val = whoInput.value.trim().toLowerCase();
+
+        if (val === "vova") sender = "Mari";
+        else if (val === "mari") sender = "Vova";
+        else return alert("Wrong answer 😄");
+
+        localStorage.setItem("sender", sender);
+
+        welcome.style.display = "none";
+        chatUI.style.display = "flex";
+    });
+
     const chatBox = document.getElementById("chat");
+    const msgInput = document.getElementById("message");
     const sendBtn = document.getElementById("sendBtn");
-    const identityLabel = document.getElementById("identityLabel");
-
-    const loginOverlay = document.getElementById("loginOverlay");
-    const answerInput = document.getElementById("answerInput");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginError = document.getElementById("loginError");
-
-    let currentUser = null;
-
-    function setIdentityLabel() {
-        if (!currentUser) {
-            identityLabel.textContent = "";
-            return;
-        }
-        if (currentUser === "Vova") {
-            identityLabel.textContent = "You: Vova";
-        } else if (currentUser === "Maria") {
-            identityLabel.textContent = "You: Mari";
-        } else {
-            identityLabel.textContent = "You: " + currentUser;
-        }
-    }
-
-    function getStoredUser() {
-        try {
-            return window.localStorage.getItem("mini_chat_user");
-        } catch (e) {
-            return null;
-        }
-    }
-
-    function storeUser(user) {
-        try {
-            window.localStorage.setItem("mini_chat_user", user);
-        } catch (e) {}
-    }
 
     async function fetchMessages() {
-        if (!currentUser) return;
-        try {
-            const res = await fetch("/messages?limit=50");
-            const data = await res.json();
-            renderMessages(data);
-        } catch (e) {
-            console.error("Failed to fetch messages", e);
-        }
+        const res = await fetch("/messages?limit=50");
+        const data = await res.json();
+        renderMessages(data);
     }
 
     function renderMessages(list) {
+        if (!sender) return;
         chatBox.innerHTML = "";
 
-        for (const m of list) {
+        list.forEach(m => {
             const row = document.createElement("div");
-            row.className = "msg-row" + (m.sender === currentUser ? " me" : "");
+            row.className = "msg-row" + (m.sender === sender ? " me" : "");
 
             const bubble = document.createElement("div");
-            bubble.className = "bubble" + (m.sender === currentUser ? " me" : "");
+            bubble.className = "bubble" + (m.sender === sender ? " me" : "");
 
             const meta = document.createElement("div");
             meta.className = "msg-meta";
+
             const t = new Date(m.timestamp);
-            const timeStr = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
-            meta.textContent = `${m.sender} · ${timeStr}`;
+            const time = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+
+            meta.textContent = `${m.sender} • ${time}`;
 
             const text = document.createElement("div");
-            text.className = "msg-text";
             text.textContent = m.text;
 
             bubble.appendChild(meta);
             bubble.appendChild(text);
             row.appendChild(bubble);
             chatBox.appendChild(row);
-        }
+        });
 
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
     async function sendMessage() {
-        if (!currentUser) {
-            showLogin();
-            return;
-        }
+        if (!sender) return;
+
         const text = msgInput.value.trim();
         if (!text) return;
 
-        try {
-            await fetch("/messages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sender: currentUser, text }),
-            });
-            msgInput.value = "";
-            await fetchMessages();
-        } catch (e) {
-            console.error("Failed to send message", e);
-        }
+        await fetch("/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sender, text }),
+        });
+
+        msgInput.value = "";
+        fetchMessages();
     }
-
-    function showLogin() {
-        loginOverlay.classList.remove("hidden");
-        answerInput.value = "";
-        loginError.textContent = "";
-        answerInput.focus();
-    }
-
-    function hideLogin() {
-        loginOverlay.classList.add("hidden");
-        loginError.textContent = "";
-        answerInput.value = "";
-    }
-
-    function resolveUserFromAnswer(raw) {
-        const ans = raw.trim().toLowerCase();
-        if (!ans) return null;
-
-        if (ans === "vova") {
-            // If you answer "Vova", you are Mari
-            return "Maria";
-        }
-        if (ans === "mari" || ans === "maria") {
-            // If you answer "Mari", you are Vova
-            return "Vova";
-        }
-        return null;
-    }
-
-    async function performLogin() {
-        const raw = answerInput.value;
-        const user = resolveUserFromAnswer(raw);
-        if (!user) {
-            loginError.textContent = 'Please answer exactly "Vova" or "Mari".';
-            return;
-        }
-
-        currentUser = user;
-        storeUser(currentUser);
-        setIdentityLabel();
-        hideLogin();
-        await fetchMessages();
-    }
-
-    // Події
 
     sendBtn.addEventListener("click", sendMessage);
 
-    msgInput.addEventListener("keydown", (e) => {
+    msgInput.addEventListener("keydown", e => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
 
-    loginBtn.addEventListener("click", performLogin);
-
-    answerInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            performLogin();
-        }
-    });
-
-    // Ініціалізація
-
-    (function init() {
-        const stored = getStoredUser();
-        if (stored) {
-            currentUser = stored;
-            setIdentityLabel();
-            fetchMessages();
-        } else {
-            showLogin();
-        }
-
-        setInterval(fetchMessages, 3000);
-    })();
+    fetchMessages();
+    setInterval(fetchMessages, 3000);
 </script>
+
 </body>
 </html>
