@@ -1,388 +1,381 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8" />
-    <title>Mini Chat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <title>Mini Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #eef2ff;
+      color: #111827;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #e5ecff;
-            color: #111827;
-        }
+    /* ===== ГОЛОВНИЙ КОНТЕЙНЕР ===== */
 
-        /* ВЕСЬ ЕКРАН = ОДИН FLEX-КОНТЕЙНЕР */
-        .page {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 8px;
-        }
+    .app-root {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: env(safe-area-inset-top, 8px)
+               env(safe-area-inset-right, 8px)
+               env(safe-area-inset-bottom, 8px)
+               env(safe-area-inset-left, 8px);
+    }
 
-        /* Блок з історією: займає все місце, що лишилось */
-        .chat {
-            flex: 1;
-            min-height: 0;          /* критично важливо */
-            border-radius: 16px;
-            border: 1px solid #dbeafe;
-            background: #eff6ff;
-            padding: 8px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .chat-shell {
+      flex: 1;
+      max-width: 960px;
+      border-radius: 22px;
+      background: #f9fafb;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.18),
+        0 0 0 1px rgba(148, 163, 184, 0.35);
+      display: flex;
+      flex-direction: column;
+      padding: 10px 10px 12px;
+      min-height: 0;
+    }
 
-        .msg-row {
-            width: 100%;
-            display: flex;
-        }
+    /* ===== ОБЛАСТЬ ІСТОРІЇ ===== */
 
-        .msg-row.me {
-            justify-content: flex-end;
-        }
+    .chat-history {
+      flex: 1;
+      min-height: 0;
+      border-radius: 18px;
+      background: #e5edff;
+      padding: 10px 10px 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
-        .bubble {
-            display: inline-block;
-            max-width: 80%;
-            padding: 6px 10px;
-            border-radius: 14px;
-            background: #dbeafe;
-            border: 1px solid #93c5fd;
-            color: #111827;
-        }
+    .msg-row {
+      display: flex;
+      width: 100%;
+      justify-content: flex-end;
+    }
 
-        .bubble.me {
-            background: #3b82f6;
-            border-color: #1d4ed8;
-            color: #f9fafb;
-        }
+    .msg-bubble {
+      max-width: 78%;
+      border-radius: 16px;
+      padding: 6px 10px;
+      background: #3b82f6;
+      border: 1px solid #1d4ed8;
+      color: #eff6ff;
+      font-size: 13px;
+      line-height: 1.25;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
 
-        .msg-meta {
-            font-size: 11px;
-            opacity: 0.75;
-            margin-bottom: 2px;
-        }
+    .msg-meta {
+      font-size: 11px;
+      opacity: 0.75;
+      margin-bottom: 2px;
+    }
 
-        .msg-text {
-            font-size: 13px;
-            line-height: 1.3;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+    /* ===== ПОЛЕ ВВОДУ ===== */
 
-        /* НИЖНЯ СМУЖКА З ІНПУТОМ – завжди внизу, бо page = flex column */
-        .input-row {
-            display: flex;
-            gap: 8px;
-            padding-top: 8px;
-        }
+    .composer {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
 
-        .textarea {
-            flex: 1;
-            min-height: 44px;
-            max-height: 110px;
-            border-radius: 999px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            padding: 10px 14px;
-            font-size: 14px;
-            color: #111827;
-            resize: none;
-            outline: none;
-        }
+    .composer-input {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      resize: none;
+      max-height: 120px;
+    }
 
-        .textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
-            background: #ffffff;
-        }
+    .composer-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
+      background: #ffffff;
+    }
 
-        .btn {
-            border-radius: 999px;
-            border: none;
-            padding: 11px 18px;
-            font-size: 14px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: #f9fafb;
-            cursor: pointer;
-            box-shadow:
-                0 12px 24px rgba(37, 99, 235, 0.45),
-                0 0 0 1px rgba(30, 64, 175, 0.7);
-            white-space: nowrap;
-        }
+    .send-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow:
+        0 14px 30px rgba(37, 99, 235, 0.55),
+        0 0 0 1px rgba(30, 64, 175, 0.7);
+      white-space: nowrap;
+    }
 
-        .btn:active {
-            transform: translateY(1px);
-        }
+    .send-btn:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 8px 18px rgba(37, 99, 235, 0.6),
+        0 0 0 1px rgba(30, 64, 175, 0.8);
+    }
 
-        /* ---------- Оверлей логіну ---------- */
+    /* ===== ЛОГІН-ЕКРАН ===== */
 
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.55);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
-        }
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, rgba(191, 219, 254, 0.55), rgba(15, 23, 42, 0.82));
+      padding: 16px;
+    }
 
-        .overlay.hidden {
-            display: none;
-        }
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      border-radius: 22px;
+      background: #f9fafb;
+      box-shadow:
+        0 24px 60px rgba(15, 23, 42, 0.6),
+        0 0 0 1px rgba(148, 163, 184, 0.55);
+      padding: 20px 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        .login-card {
-            width: min(420px, 100vw - 40px);
-            border-radius: 24px;
-            background: #f9fbff;
-            padding: 20px 18px 18px;
-            box-shadow:
-                0 18px 40px rgba(15, 23, 42, 0.25),
-                0 0 0 1px rgba(148, 163, 184, 0.4);
-        }
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      text-align: left;
+    }
 
-        .login-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
+    .login-input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 9px 14px;
+      font-size: 15px;
+      outline: none;
+    }
 
-        .login-sub {
-            font-size: 14px;
-            color: #4b5563;
-            margin-bottom: 14px;
-        }
+    .login-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
+      background: #ffffff;
+    }
 
-        .login-input {
-            width: 100%;
-            border-radius: 999px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            padding: 10px 14px;
-            font-size: 14px;
-            outline: none;
-            margin-bottom: 12px;
-        }
+    .login-button {
+      align-self: flex-end;
+      margin-top: 4px;
+      border-radius: 999px;
+      border: none;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow:
+        0 14px 30px rgba(37, 99, 235, 0.55),
+        0 0 0 1px rgba(30, 64, 175, 0.7);
+      white-space: nowrap;
+    }
 
-        .login-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
-            background: #ffffff;
-        }
+    .login-button:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 8px 18px rgba(37, 99, 235, 0.6),
+        0 0 0 1px rgba(30, 64, 175, 0.8);
+    }
 
-        .login-btn {
-            width: 100%;
-            border-radius: 999px;
-            border: none;
-            padding: 10px 0;
-            font-size: 15px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: #f9fafb;
-            cursor: pointer;
-            box-shadow:
-                0 12px 28px rgba(37, 99, 235, 0.5),
-                0 0 0 1px rgba(30, 64, 175, 0.7);
-        }
-
-        .login-btn:active {
-            transform: translateY(1px);
-        }
-    </style>
+    @media (max-width: 640px) {
+      .chat-shell {
+        border-radius: 0;
+      }
+      .app-root {
+        padding: env(safe-area-inset-top, 0)
+                 env(safe-area-inset-right, 0)
+                 env(safe-area-inset-bottom, 0)
+                 env(safe-area-inset-left, 0);
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="page">
-    <div id="chat" class="chat"></div>
+<div class="app-root">
+  <div class="chat-shell">
+    <div id="chat" class="chat-history"></div>
 
-    <div class="input-row">
-        <textarea
-            id="message"
-            class="textarea"
-            placeholder="Напиши повідомлення…"
-        ></textarea>
-        <button id="sendBtn" class="btn">Send</button>
+    <div class="composer">
+      <textarea
+        id="message-input"
+        class="composer-input"
+        placeholder="Напиши повідомлення…"
+      ></textarea>
+      <button id="send-btn" class="send-btn">Send</button>
     </div>
+  </div>
 </div>
 
-<!-- Оверлей "Who do you love?" -->
-<div id="loginOverlay" class="overlay hidden">
-    <div class="login-card">
-        <div class="login-title">Who do you love?</div>
-        <button id="loveBtn" class="login-btn">Continue</button>
-    </div>
+<!-- Логін-екран -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-title">Who do you love?</div>
+    <input
+      id="love-input"
+      class="login-input"
+      autocomplete="off"
+    />
+    <button id="love-button" class="login-button">Continue</button>
+  </div>
 </div>
 
 <script>
-    const STORAGE_KEY = "mini_chat_sender_v2";
+  const chatBox = document.getElementById("chat");
+  const msgInput = document.getElementById("message-input");
+  const sendBtn = document.getElementById("send-btn");
 
-    const chatBox = document.getElementById("chat");
-    const msgInput = document.getElementById("message");
-    const sendBtn = document.getElementById("sendBtn");
+  const loginScreen = document.getElementById("login-screen");
+  const loveInput = document.getElementById("love-input");
+  const loveButton = document.getElementById("love-button");
 
-    const loginOverlay = document.getElementById("loginOverlay");
-    const loveInput = document.getElementById("loveInput");
-    const loveBtn = document.getElementById("loveBtn");
+  const STORAGE_KEY = "miniChatName";
+  let currentSender = null;
 
-    let currentSender = null;
+  /* ====== ЛОГІН-ЛОГІКА ====== */
 
-    // ---------- логіка ніку ----------
+  function resolveNameFromLove(answer) {
+    if (!answer) return null;
+    const a = answer.trim().toLowerCase();
+    if (a === "vova") return "Mari";
+    if (a === "mari") return "Vova";
+    return null;
+  }
 
-    function decideSenderFromAnswer(answerRaw) {
-        const ans = (answerRaw || "").trim().toLowerCase();
-        if (ans === "vova") {
-            // Якщо любиш Vova — ти Mari
-            return "Mari";
-        }
-        if (ans === "mari") {
-            // Якщо любиш Mari — ти Vova
-            return "Vova";
-        }
-        return "Vova";
+  function initLogin() {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored && stored.trim()) {
+      currentSender = stored.trim();
+      loginScreen.style.display = "none";
+      return;
     }
 
-    function showLoginOverlay() {
-        loginOverlay.classList.remove("hidden");
+    loginScreen.style.display = "flex";
+
+    function handleLoveSubmit() {
+      const raw = loveInput.value;
+      const name = resolveNameFromLove(raw);
+      if (!name) {
         loveInput.value = "";
-        setTimeout(() => loveInput.focus(), 50);
+        loveInput.placeholder = "Type Vova or Mari";
+        return;
+      }
+      currentSender = name;
+      window.localStorage.setItem(STORAGE_KEY, name);
+      loginScreen.style.display = "none";
+      fetchMessages();
     }
 
-    function hideLoginOverlay() {
-        loginOverlay.classList.add("hidden");
-    }
-
-    function completeLogin(answerRaw) {
-        const sender = decideSenderFromAnswer(answerRaw);
-        currentSender = sender;
-        try {
-            localStorage.setItem(STORAGE_KEY, sender);
-        } catch (e) {
-            console.warn("localStorage failed", e);
-        }
-        hideLoginOverlay();
-        fetchMessages();
-    }
-
-    loveBtn.addEventListener("click", () => {
-        completeLogin(loveInput.value);
-    });
-
+    loveButton.onclick = handleLoveSubmit;
     loveInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            completeLogin(loveInput.value);
-        }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleLoveSubmit();
+      }
     });
+  }
 
-    function initSender() {
-        let saved = null;
-        try {
-            saved = localStorage.getItem(STORAGE_KEY);
-        } catch (e) {
-            saved = null;
-        }
+  /* ====== РЕНДЕР ПОВІДОМЛЕНЬ ====== */
 
-        if (saved) {
-            currentSender = saved;
-            hideLoginOverlay();
-        } else {
-            showLoginOverlay();
-        }
+  function renderMessages(list) {
+    chatBox.innerHTML = "";
+    for (const m of list) {
+      const row = document.createElement("div");
+      row.className = "msg-row";
+
+      const bubble = document.createElement("div");
+      bubble.className = "msg-bubble";
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      const t = new Date(m.timestamp);
+      const timeStr = t.toLocaleTimeString("uk-UA", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      meta.textContent = `${m.sender} · ${timeStr}`;
+
+      const text = document.createElement("div");
+      text.textContent = m.text;
+
+      bubble.appendChild(meta);
+      bubble.appendChild(text);
+      row.appendChild(bubble);
+      chatBox.appendChild(row);
     }
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
 
-    // ---------- чат ----------
-
-    async function fetchMessages() {
-        try {
-            const res = await fetch("/messages?limit=200");
-            if (!res.ok) return;
-            const data = await res.json();
-            renderMessages(data);
-        } catch (e) {
-            console.error("Failed to fetch messages", e);
-        }
+  async function fetchMessages() {
+    try {
+      const res = await fetch("/messages?limit=100");
+      const data = await res.json();
+      renderMessages(data);
+    } catch (e) {
+      console.error("Failed to fetch messages", e);
     }
+  }
 
-    function renderMessages(list) {
-        chatBox.innerHTML = "";
-
-        for (const m of list) {
-            const row = document.createElement("div");
-            const isMe = currentSender && m.sender === currentSender;
-            row.className = "msg-row" + (isMe ? " me" : "");
-
-            const bubble = document.createElement("div");
-            bubble.className = "bubble" + (isMe ? " me" : "");
-
-            const meta = document.createElement("div");
-            meta.className = "msg-meta";
-            const t = new Date(m.timestamp);
-            const timeStr = t.toLocaleTimeString("uk-UA", {
-                hour: "2-digit",
-                minute: "2-digit"
-            });
-            meta.textContent = `${m.sender} · ${timeStr}`;
-
-            const text = document.createElement("div");
-            text.className = "msg-text";
-            text.textContent = m.text;
-
-            bubble.appendChild(meta);
-            bubble.appendChild(text);
-            row.appendChild(bubble);
-            chatBox.appendChild(row);
-        }
-
-        chatBox.scrollTop = chatBox.scrollHeight;
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!text || !currentSender) return;
+    try {
+      await fetch("/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: currentSender, text }),
+      });
+      msgInput.value = "";
+      await fetchMessages();
+    } catch (e) {
+      console.error("Failed to send message", e);
     }
+  }
 
-    async function sendMessage() {
-        const text = msgInput.value.trim();
-        if (!text) return;
-        if (!currentSender) {
-            showLoginOverlay();
-            return;
-        }
-
-        try {
-            await fetch("/messages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sender: currentSender, text })
-            });
-            msgInput.value = "";
-            await fetchMessages();
-        } catch (e) {
-            console.error("Failed to send message", e);
-        }
+  sendBtn.addEventListener("click", sendMessage);
+  msgInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
+  });
 
-    sendBtn.addEventListener("click", sendMessage);
-
-    msgInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // ---------- старт ----------
-
-    initSender();
-    fetchMessages();
-    setInterval(fetchMessages, 3000);
+  initLogin();
+  fetchMessages();
+  setInterval(fetchMessages, 3000);
 </script>
 </body>
 </html>
