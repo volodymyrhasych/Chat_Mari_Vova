@@ -69,21 +69,13 @@ CHAT_HTML = """
 
         body {
             margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             background: #f5f7ff;
             color: #111827;
-        }
-
-        /* Рамка по краях всього екрану */
-        .app-frame {
-            position: fixed;
-            inset: 0;
-            border: 2px solid #bfdbfe;
-            box-sizing: border-box;
-            background: #f5f7ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .card {
@@ -91,10 +83,10 @@ CHAT_HTML = """
             height: min(640px, 100vh - 32px);
             border-radius: 28px;
             background: #ffffff;
-            border: 1px solid #dbeafe;
+            border: 2px solid #bfdbfe;
             box-shadow:
-                0 20px 50px rgba(15, 23, 42, 0.12),
-                0 0 0 1px rgba(148, 163, 184, 0.35);
+                0 20px 50px rgba(15, 23, 42, 0.15),
+                0 0 0 1px rgba(148, 163, 184, 0.4);
             padding: 18px 20px 18px;
             display: flex;
             flex-direction: column;
@@ -131,9 +123,17 @@ CHAT_HTML = """
             background: #ffffff;
         }
 
+        .chat-row {
+            flex: 1;
+            min-height: 0;          /* ключ, щоб flex-елемент реально міг рости */
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .chat-wrapper {
             flex: 1;
-            min-height: 0;
+            min-height: 0;          /* дозволяє скролитися замість стиснення */
             border-radius: 20px;
             border: 1px solid #bfdbfe;
             background: #eff6ff;
@@ -172,11 +172,8 @@ CHAT_HTML = """
 
         .msg-meta {
             font-size: 11px;
-            opacity: 0.8;
+            opacity: 0.7;
             margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
         .msg-text {
@@ -184,19 +181,6 @@ CHAT_HTML = """
             line-height: 1.25;
             white-space: pre-wrap;
             word-wrap: break-word;
-        }
-
-        .msg-status {
-            font-size: 10px;
-            margin-left: 4px;
-        }
-
-        .status-delivered {
-            color: #9ca3af; /* сіра галочка */
-        }
-
-        .status-read {
-            color: #22c55e; /* зелена галочка */
         }
 
         .input-row {
@@ -248,35 +232,41 @@ CHAT_HTML = """
                 0 0 0 1px rgba(30, 64, 175, 0.7);
         }
 
+        /* Мобільна версія */
         @media (max-width: 640px) {
+            body {
+                align-items: stretch;
+                justify-content: flex-start;
+            }
+
             .card {
-                border-radius: 0;
                 width: 100vw;
                 height: 100vh;
-                max-height: none;
                 max-width: none;
-                padding: 12px 12px 14px;
+                max-height: none;
+                border-radius: 0;
+                border-width: 1px;
+                box-shadow: none;
+                padding: 12px 12px 10px;
             }
         }
     </style>
 </head>
 <body>
-<div class="app-frame">
-    <div class="card">
-        <div class="field-row">
-            <div class="label">Нік</div>
-            <input id="sender" class="input" value="Vova" />
-        </div>
+<div class="card">
+    <div class="field-row">
+        <div class="label">Нік</div>
+        <input id="sender" class="input" value="Vova" />
+    </div>
 
-        <div class="field-row" style="flex: 1; min-height: 0;">
-            <div class="label">Історія</div>
-            <div id="chat" class="chat-wrapper"></div>
-        </div>
+    <div class="chat-row">
+        <div class="label">Історія</div>
+        <div id="chat" class="chat-wrapper"></div>
+    </div>
 
-        <div class="input-row">
-            <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
-            <button id="sendBtn" class="btn">Send</button>
-        </div>
+    <div class="input-row">
+        <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
+        <button id="sendBtn" class="btn">Send</button>
     </div>
 </div>
 
@@ -288,11 +278,9 @@ CHAT_HTML = """
 
     async function fetchMessages() {
         try {
-            const viewer = encodeURIComponent(senderInput.value.trim() || "");
-            const res = await fetch("/messages?limit=50&viewer=" + viewer);
+            const res = await fetch("/messages?limit=50");
             const data = await res.json();
             renderMessages(data);
-            await markMessagesRead();
         } catch (e) {
             console.error("Failed to fetch messages", e);
         }
@@ -314,25 +302,6 @@ CHAT_HTML = """
             const t = new Date(m.timestamp);
             const timeStr = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
             meta.textContent = `${m.sender} · ${timeStr}`;
-
-            // Статуси тільки для власних повідомлень
-            if (m.sender === me) {
-                const status = document.createElement("span");
-                status.classList.add("msg-status");
-
-                if (m.read) {
-                    status.classList.add("status-read");
-                    status.textContent = "✔✔";
-                } else if (m.delivered) {
-                    status.classList.add("status-delivered");
-                    status.textContent = "✔";
-                } else {
-                    status.classList.add("status-delivered");
-                    status.textContent = "…";
-                }
-
-                meta.appendChild(status);
-            }
 
             const text = document.createElement("div");
             text.className = "msg-text";
@@ -365,21 +334,6 @@ CHAT_HTML = """
         }
     }
 
-    async function markMessagesRead() {
-        const viewer = senderInput.value.trim();
-        if (!viewer) return;
-
-        try {
-            await fetch("/messages/mark-read", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ viewer }),
-            });
-        } catch (e) {
-            console.error("Failed to mark messages read", e);
-        }
-    }
-
     sendBtn.addEventListener("click", sendMessage);
     msgInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -394,11 +348,6 @@ CHAT_HTML = """
 </body>
 </html>
 """
-
-@app.get("/", response_class=HTMLResponse)
-def chat_page():
-    return CHAT_HTML
-
 
 # ---------- API-ендпоінти ----------
 
