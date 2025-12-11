@@ -22,50 +22,19 @@
             color: #111827;
         }
 
-        /* Обгортка, щоб центрити картку на десктопі
-           і розтягувати на всю висоту на мобільному */
-        .app {
+        /* ВЕСЬ ЕКРАН = ОДИН FLEX-КОНТЕЙНЕР */
+        .page {
             height: 100%;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             padding: 8px;
         }
 
-        .card {
-            width: min(900px, 100vw - 16px);
-            height: min(700px, 100vh - 16px);
-            border-radius: 24px;
-            background: #f9fbff;
-            border: 1px solid #d1e3ff;
-            box-shadow:
-                0 18px 40px rgba(15, 23, 42, 0.18),
-                0 0 0 1px rgba(148, 163, 184, 0.32);
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* На вузьких екранах — майже повний екран, без вертикального центрування */
-        @media (max-width: 640px) {
-            .app {
-                align-items: stretch;
-            }
-
-            .card {
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-                border-left: none;
-                border-right: none;
-            }
-        }
-
-        .chat-wrapper {
+        /* Блок з історією: займає все місце, що лишилось */
+        .chat {
             flex: 1;
-            min-height: 0; /* важливо, щоб overflow працював у flex-контейнері */
-            border-radius: 18px;
+            min-height: 0;          /* критично важливо */
+            border-radius: 16px;
             border: 1px solid #dbeafe;
             background: #eff6ff;
             padding: 8px;
@@ -97,7 +66,7 @@
         .bubble.me {
             background: #3b82f6;
             border-color: #1d4ed8;
-            color: #eff6ff;
+            color: #f9fafb;
         }
 
         .msg-meta {
@@ -113,11 +82,11 @@
             word-wrap: break-word;
         }
 
+        /* НИЖНЯ СМУЖКА З ІНПУТОМ – завжди внизу, бо page = flex column */
         .input-row {
             display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            padding-top: 4px;
+            gap: 8px;
+            padding-top: 8px;
         }
 
         .textarea {
@@ -143,30 +112,28 @@
         .btn {
             border-radius: 999px;
             border: none;
-            padding: 11px 20px;
+            padding: 11px 18px;
             font-size: 14px;
             font-weight: 600;
             background: linear-gradient(135deg, #3b82f6, #60a5fa);
             color: #f9fafb;
             cursor: pointer;
             box-shadow:
-                0 12px 28px rgba(37, 99, 235, 0.5),
+                0 12px 24px rgba(37, 99, 235, 0.45),
                 0 0 0 1px rgba(30, 64, 175, 0.7);
             white-space: nowrap;
         }
 
         .btn:active {
             transform: translateY(1px);
-            box-shadow:
-                0 6px 16px rgba(37, 99, 235, 0.5),
-                0 0 0 1px rgba(30, 64, 175, 0.7);
         }
 
-        /* --------- Оверлей логіну --------- */
+        /* ---------- Оверлей логіну ---------- */
+
         .overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.55);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -237,22 +204,20 @@
     </style>
 </head>
 <body>
-<div class="app">
-    <div class="card">
-        <div id="chat" class="chat-wrapper"></div>
+<div class="page">
+    <div id="chat" class="chat"></div>
 
-        <div class="input-row">
-            <textarea
-                id="message"
-                class="textarea"
-                placeholder="Напиши повідомлення…"
-            ></textarea>
-            <button id="sendBtn" class="btn">Send</button>
-        </div>
+    <div class="input-row">
+        <textarea
+            id="message"
+            class="textarea"
+            placeholder="Напиши повідомлення…"
+        ></textarea>
+        <button id="sendBtn" class="btn">Send</button>
     </div>
 </div>
 
-<!-- Оверлей з питанням Who do you love? -->
+<!-- Оверлей "Who do you love?" -->
 <div id="loginOverlay" class="overlay hidden">
     <div class="login-card">
         <div class="login-title">Who do you love?</div>
@@ -265,7 +230,7 @@
 </div>
 
 <script>
-    const STORAGE_KEY = "mini_chat_sender_v1";
+    const STORAGE_KEY = "mini_chat_sender_v2";
 
     const chatBox = document.getElementById("chat");
     const msgInput = document.getElementById("message");
@@ -277,19 +242,18 @@
 
     let currentSender = null;
 
-    // ---------- Логіка визначення ніку ----------
+    // ---------- логіка ніку ----------
 
     function decideSenderFromAnswer(answerRaw) {
         const ans = (answerRaw || "").trim().toLowerCase();
         if (ans === "vova") {
-            // Якщо ти любиш Vova – ти Mari
+            // Якщо любиш Vova — ти Mari
             return "Mari";
         }
         if (ans === "mari") {
-            // Якщо ти любиш Mari – ти Vova
+            // Якщо любиш Mari — ти Vova
             return "Vova";
         }
-        // запасний варіант
         return "Vova";
     }
 
@@ -309,7 +273,7 @@
         try {
             localStorage.setItem(STORAGE_KEY, sender);
         } catch (e) {
-            console.warn("Cannot use localStorage", e);
+            console.warn("localStorage failed", e);
         }
         hideLoginOverlay();
         fetchMessages();
@@ -342,7 +306,7 @@
         }
     }
 
-    // ---------- Чат: завантаження і відображення ----------
+    // ---------- чат ----------
 
     async function fetchMessages() {
         try {
@@ -399,7 +363,7 @@
         try {
             await fetch("/messages", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ sender: currentSender, text })
             });
             msgInput.value = "";
@@ -418,10 +382,9 @@
         }
     });
 
-    // ---------- Старт ----------
+    // ---------- старт ----------
 
     initSender();
-    // Після ініціалізації ніку — періодичний пулінг
     fetchMessages();
     setInterval(fetchMessages, 3000);
 </script>
