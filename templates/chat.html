@@ -11,36 +11,34 @@
 
     html,
     body {
-      height: 100%;
       margin: 0;
       padding: 0;
     }
 
-    /* Тіло сторінки: просто флекс, без центрів і safe-area */
+    /* body більше НЕ flex, просто фон */
     body {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       background: #eef2ff;
       color: #111827;
-      display: flex;
     }
 
-    /* Головний контейнер на весь екран */
+    /* Ось тут магія: корінь займає весь екран */
     .app-root {
-      flex: 1;
+      min-height: 100vh;           /* висота = один екран */
       display: flex;
     }
 
-    /* Оболонка чату — теж на весь екран, без рамок/тіней */
+    /* Оболонка чату розтягується всередині app-root */
     .chat-shell {
       flex: 1;
       display: flex;
       flex-direction: column;
-      min-height: 0;        /* щоб history могла скролитись */
+      min-height: 0;               /* щоб history могла скролитися */
       padding: 8px 8px 10px;
       background: #eef2ff;
     }
 
-    /* ІСТОРІЯ: заповнює весь простір над composer’ом */
+    /* === ІСТОРІЯ === */
     .chat-history {
       flex: 1;
       min-height: 0;
@@ -78,13 +76,13 @@
       margin-bottom: 2px;
     }
 
-    /* РЯДОК ВВОДУ: жорстко внизу, не росте */
+    /* === РЯДОК ВВОДУ — ПРИКЛЕЄНИЙ ДО НИЗУ === */
     .composer {
       margin-top: 8px;
       display: flex;
       gap: 8px;
       align-items: center;
-      flex-shrink: 0; /* не стискаємо */
+      flex-shrink: 0; /* не стискаємо рядок вводу */
     }
 
     .composer-input {
@@ -127,7 +125,7 @@
         0 0 0 1px rgba(30, 64, 175, 0.8);
     }
 
-    /* ЛОГІН-ЕКРАН */
+    /* === ЛОГІН-ЕКРАН === */
 
     #login-screen {
       position: fixed;
@@ -245,8 +243,6 @@
   const STORAGE_KEY = "miniChatName";
   let currentSender = null;
 
-  /* ЛОГІН */
-
   function resolveNameFromLove(answer) {
     if (!answer) return null;
     const a = answer.trim().toLowerCase();
@@ -287,8 +283,6 @@
       }
     });
   }
-
-  /* РЕНДЕР ПОВІДОМЛЕНЬ */
 
   function renderMessages(list) {
     chatBox.innerHTML = "";
