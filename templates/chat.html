@@ -15,25 +15,24 @@
       padding: 0;
     }
 
-    /* body більше НЕ flex, просто фон */
     body {
       font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       background: #eef2ff;
       color: #111827;
     }
 
-    /* Ось тут магія: корінь займає весь екран */
+    /* Корінь на весь екран */
     .app-root {
-      min-height: 100vh;           /* висота = один екран */
+      min-height: 100vh;
       display: flex;
     }
 
-    /* Оболонка чату розтягується всередині app-root */
+    /* Оболонка чату */
     .chat-shell {
       flex: 1;
       display: flex;
       flex-direction: column;
-      min-height: 0;               /* щоб history могла скролитися */
+      min-height: 0;
       padding: 8px 8px 10px;
       background: #eef2ff;
     }
@@ -46,8 +45,11 @@
       background: #ffffff;
       padding: 10px 10px 12px;
       overflow-y: auto;
+
+      /* КЛЮЧОВЕ: всі повідомлення притискаємо до НИЗУ */
       display: flex;
       flex-direction: column;
+      justify-content: flex-end;
       gap: 6px;
     }
 
@@ -76,13 +78,13 @@
       margin-bottom: 2px;
     }
 
-    /* === РЯДОК ВВОДУ — ПРИКЛЕЄНИЙ ДО НИЗУ === */
+    /* === РЯДОК ВВОДУ ВНИЗУ === */
     .composer {
       margin-top: 8px;
       display: flex;
       gap: 8px;
       align-items: center;
-      flex-shrink: 0; /* не стискаємо рядок вводу */
+      flex-shrink: 0;
     }
 
     .composer-input {
