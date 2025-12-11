@@ -21,18 +21,20 @@
       color: #111827;
     }
 
+    /* Вся сторінка зафіксована на весь екран */
     .page {
-      min-height: 100vh;
+      position: fixed;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: stretch;
       justify-content: stretch;
     }
 
-    /* ---------- Вхідне питання (оверлей) ---------- */
+    /* ---------- Оверлей питання ---------- */
 
     .gate-overlay {
-      position: fixed;
+      position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
@@ -108,13 +110,12 @@
       display: none;
     }
 
-    /* ---------- Основний чат, повноекранний ---------- */
+    /* ---------- Основний чат (full-screen) ---------- */
 
     .chat-shell {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      padding: 10px 10px 12px;
+      padding: 8px;
     }
 
     .chat-card {
@@ -135,7 +136,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      min-height: 0; /* важливо, щоб скрол працював нормально */
+      min-height: 0; /* щоб скрол всередині працював нормально */
     }
 
     .messages {
@@ -191,16 +192,18 @@
     }
 
     .input-row {
-      margin-top: 10px;
+      margin-top: 6px;
       display: flex;
       gap: 10px;
-      align-items: flex-end;
+      align-items: center;
     }
 
+    /* Фіксована висота input-бара, щоб він не ріс */
     .textarea {
       flex: 1;
-      min-height: 48px;
-      max-height: 110px;
+      height: 44px;
+      min-height: 44px;
+      max-height: 44px;
       border-radius: 999px;
       border: 1px solid #bfdbfe;
       background: #f9fbff;
@@ -208,6 +211,7 @@
       font-size: 14px;
       color: #111827;
       resize: none;
+      overflow-y: auto;
       outline: none;
     }
 
@@ -304,11 +308,11 @@
     const ans = (answerRaw || "").trim().toLowerCase();
 
     if (ans === "vova") {
-      // ти любиш Vova → ти Mari
+      // любиш Vova -> пишеш як Mari
       myName = "Mari";
       lovedName = "Vova";
     } else if (ans === "mari") {
-      // ти любиш Mari → ти Vova
+      // любиш Mari -> пишеш як Vova
       myName = "Vova";
       lovedName = "Mari";
     } else {
@@ -426,7 +430,6 @@
     }
   });
 
-  // старт
   initGate();
   setInterval(fetchMessages, 3000);
 </script>
