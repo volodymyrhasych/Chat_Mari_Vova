@@ -1,330 +1,412 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8" />
-    <title>Mini Chat</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <title>Mini Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
 
-        body {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #f5f7ff;
-            color: #111827;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #f5f7ff;
+      color: #111827;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
 
-        /* --- LOGIN SCREEN --- */
-        .welcome-screen {
-            width: 360px;
-            background: #ffffff;
-            padding: 26px;
-            border-radius: 24px;
-            border: 2px solid #bfdbfe;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+    /* Основна картка чату */
+    .chat-shell {
+      width: min(960px, 100%);
+      height: min(640px, 100%);
+      border-radius: 26px;
+      background: #ffffff;
+      border: 2px solid #bfdbfe;
+      box-shadow:
+        0 20px 50px rgba(15, 23, 42, 0.15),
+        0 0 0 1px rgba(148, 163, 184, 0.35);
+      padding: 14px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-        .welcome-text {
-            font-size: 18px;
-            font-weight: 600;
-        }
+    .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      margin-left: 2px;
+    }
 
-        .welcome-input {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 14px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            font-size: 15px;
-            outline: none;
-        }
-        .welcome-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59,130,246,0.35);
-            background: #ffffff;
-        }
+    .history-wrapper {
+      flex: 1;
+      min-height: 0;
+      border-radius: 18px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      padding: 8px 8px 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scroll-behavior: smooth;
+    }
 
-        .welcome-btn {
-            padding: 12px 16px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 14px;
-            border: none;
-            cursor: pointer;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: white;
-        }
+    .msg-row {
+      display: flex;
+      width: 100%;
+    }
 
-        /* --- CHAT LAYOUT --- */
+    .msg-row.me {
+      justify-content: flex-end;
+    }
 
-        .chat-card {
-            width: min(900px, 100vw - 32px);
-            height: min(680px, 100vh - 32px);
-            border-radius: 28px;
-            background: #ffffff;
-            border: 2px solid #bfdbfe;
-            display: none;          /* показуємо після логіну */
-            flex-direction: column;
-            padding: 20px;
-            gap: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-        }
+    .bubble {
+      display: inline-block;
+      max-width: 75%;
+      padding: 6px 10px;
+      border-radius: 14px;
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      color: #111827;
+    }
 
-        .label {
-            font-size: 11px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-        }
+    .bubble.me {
+      background: #3b82f6;
+      border-color: #1d4ed8;
+      color: #eff6ff;
+    }
 
-        /* контейнер для "ІСТОРІЯ + чат" */
-        .history-block {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .msg-meta {
+      font-size: 11px;
+      opacity: 0.75;
+      margin-bottom: 2px;
+    }
 
-        .chat-wrapper {
-            flex: 1;
-            border-radius: 20px;
-            border: 1px solid #bfdbfe;
-            background: #eff6ff;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .msg-text {
+      font-size: 13px;
+      line-height: 1.25;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
 
-        .msg-row {
-            width: 100%;
-            display: flex;
-        }
-        .msg-row.me {
-            justify-content: flex-end;
-        }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      margin-top: 4px;
+    }
 
-        .bubble {
-            max-width: 75%;
-            padding: 8px 12px;
-            border-radius: 14px;
-            background: #dbeafe;
-            border: 1px solid #93c5fd;
-            color: #111827;
-        }
-        .bubble.me {
-            background: #3b82f6;
-            border-color: #1d4ed8;
-            color: white;
-        }
+    .textarea {
+      flex: 1;
+      min-height: 52px;
+      max-height: 110px;
+      border-radius: 16px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #111827;
+      resize: none;
+      outline: none;
+    }
 
-        .msg-meta {
-            font-size: 11px;
-            opacity: 0.8;
-        }
+    .textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      background: #ffffff;
+    }
 
-        .input-row {
-            display: flex;
-            gap: 10px;
-        }
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow:
+        0 12px 30px rgba(37, 99, 235, 0.5),
+        0 0 0 1px rgba(30, 64, 175, 0.6);
+      white-space: nowrap;
+    }
 
-        .textarea {
-            flex: 1;
-            padding: 12px;
-            border-radius: 16px;
-            border: 1px solid #bfdbfe;
-            background: #f9fbff;
-            resize: none;
-            font-size: 14px;
-            outline: none;
-        }
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 6px 16px rgba(37, 99, 235, 0.55),
+        0 0 0 1px rgba(30, 64, 175, 0.7);
+    }
 
-        .btn {
-            padding: 12px 18px;
-            border-radius: 16px;
-            background: linear-gradient(135deg,#3b82f6,#60a5fa);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
+    /* ----- Логін-оверлей ----- */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.35);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 20;
+      backdrop-filter: blur(6px);
+    }
 
-        /* --- MOBILE FULLSCREEN LAYOUT --- */
-        @media (max-width: 640px) {
-            body {
-                align-items: stretch;
-                justify-content: stretch;
-            }
+    .login-card {
+      width: min(380px, 100%);
+      border-radius: 24px;
+      background: #ffffff;
+      padding: 20px 20px 18px;
+      box-shadow:
+        0 20px 50px rgba(15, 23, 42, 0.2),
+        0 0 0 1px rgba(148, 163, 184, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-            .welcome-screen,
-            .chat-card {
-                width: 100vw;
-                height: 100vh;
-                max-width: none;
-                max-height: none;
-                border-radius: 0;
-                border-width: 0;
-                box-shadow: none;
-            }
+    .login-question {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
 
-            .welcome-screen {
-                padding: 32px 18px;
-                justify-content: center;
-            }
+    .login-label {
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 4px;
+    }
 
-            .chat-card {
-                padding: 10px 10px 14px;
-            }
-        }
-    </style>
+    .login-input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #f9fbff;
+      padding: 9px 14px;
+      font-size: 14px;
+      color: #111827;
+      outline: none;
+    }
+
+    .login-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      background: #ffffff;
+    }
+
+    .login-btn {
+      margin-top: 6px;
+      align-self: flex-end;
+      border-radius: 999px;
+      border: none;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow:
+        0 10px 24px rgba(37, 99, 235, 0.45),
+        0 0 0 1px rgba(30, 64, 175, 0.6);
+    }
+
+    .login-btn:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 5px 14px rgba(37, 99, 235, 0.5),
+        0 0 0 1px rgba(30, 64, 175, 0.7);
+    }
+
+    /* ----- Мобільна адаптація ----- */
+    @media (max-width: 640px) {
+      body {
+        padding: 0;
+        align-items: stretch;
+      }
+      .chat-shell {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border-left: none;
+        border-right: none;
+        padding-top: calc(10px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      }
+      .login-card {
+        border-radius: 18px;
+      }
+    }
+  </style>
 </head>
 <body>
+<div class="chat-shell">
+  <div class="label">Історія</div>
+  <div id="chat" class="history-wrapper"></div>
 
-<!-- LOGIN SCREEN -->
-<div id="welcome" class="welcome-screen">
-    <div class="welcome-text">Who do you love?</div>
-    <input id="who-input" class="welcome-input" />
-    <button id="who-btn" class="welcome-btn">Continue</button>
+  <div class="input-row">
+    <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
+    <button id="sendBtn" class="btn">Send</button>
+  </div>
 </div>
 
-<!-- CHAT UI -->
-<div id="chat-ui" class="chat-card">
-    <div class="history-block">
-        <div class="label">ІСТОРІЯ</div>
-        <div id="chat" class="chat-wrapper"></div>
-    </div>
-
-    <div class="input-row">
-        <textarea id="message" class="textarea" placeholder="Напиши повідомлення…"></textarea>
-        <button id="sendBtn" class="btn">Send</button>
-    </div>
+<!-- Логін-екран -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-card">
+    <div class="login-question">Who do you love?</div>
+    <div class="login-label">Answer in English with <strong>Vova</strong> or <strong>Mari</strong>.</div>
+    <input id="loginAnswer" class="login-input" autocomplete="off" />
+    <button id="loginBtn" class="login-btn">Continue</button>
+  </div>
 </div>
 
 <script>
-    let sender = null;
+  const chatBox = document.getElementById("chat");
+  const msgInput = document.getElementById("message");
+  const sendBtn = document.getElementById("sendBtn");
 
-    const welcome = document.getElementById("welcome");
-    const chatUI = document.getElementById("chat-ui");
-    const whoInput = document.getElementById("who-input");
-    const whoBtn = document.getElementById("who-btn");
+  const loginOverlay = document.getElementById("loginOverlay");
+  const loginInput = document.getElementById("loginAnswer");
+  const loginBtn = document.getElementById("loginBtn");
 
-    const saved = localStorage.getItem("sender");
-    if (saved) {
-        sender = saved;
-        welcome.style.display = "none";
-        chatUI.style.display = "flex";
+  let me = null;        // моє ім'я: "Vova" або "Mari"
+  let partner = null;   // ім'я іншого
+
+  function normalizeName(raw) {
+    if (!raw) return "";
+    const t = raw.trim().toLowerCase();
+    if (t === "vova" || t === "v" || t === "vov") return "Vova";
+    if (t === "mari" || t === "mary" || t === "m") return "Mari";
+    return "";
+  }
+
+  function saveIdentity(nameMe, namePartner) {
+    localStorage.setItem("miniChatMe", nameMe);
+    localStorage.setItem("miniChatPartner", namePartner);
+  }
+
+  function loadIdentity() {
+    const storedMe = localStorage.getItem("miniChatMe");
+    const storedPartner = localStorage.getItem("miniChatPartner");
+    if (storedMe && storedPartner) {
+      me = storedMe;
+      partner = storedPartner;
+      loginOverlay.style.display = "none";
+    }
+  }
+
+  loginBtn.addEventListener("click", () => {
+    const normalized = normalizeName(loginInput.value);
+    if (!normalized) return;
+
+    if (normalized === "Vova") {
+      me = "Vova";
+      partner = "Mari";
+    } else {
+      me = "Mari";
+      partner = "Vova";
     }
 
-    whoBtn.addEventListener("click", () => {
-        const val = whoInput.value.trim().toLowerCase();
-
-        if (val === "vova") sender = "Mari";
-        else if (val === "mari") sender = "Vova";
-        else {
-            alert("Wrong answer 😄");
-            return;
-        }
-
-        localStorage.setItem("sender", sender);
-
-        welcome.style.display = "none";
-        chatUI.style.display = "flex";
-    });
-
-    const chatBox = document.getElementById("chat");
-    const msgInput = document.getElementById("message");
-    const sendBtn = document.getElementById("sendBtn");
-
-    async function fetchMessages() {
-        try {
-            const res = await fetch("/messages?limit=50");
-            const data = await res.json();
-            renderMessages(data);
-        } catch (e) {
-            console.error("Failed to fetch messages", e);
-        }
-    }
-
-    function renderMessages(list) {
-        if (!sender) return;
-        chatBox.innerHTML = "";
-
-        list.forEach(m => {
-            const row = document.createElement("div");
-            row.className = "msg-row" + (m.sender === sender ? " me" : "");
-
-            const bubble = document.createElement("div");
-            bubble.className = "bubble" + (m.sender === sender ? " me" : "");
-
-            const meta = document.createElement("div");
-            meta.className = "msg-meta";
-
-            const t = new Date(m.timestamp);
-            const time = t.toLocaleTimeString("uk-UA", {
-                hour: "2-digit",
-                minute: "2-digit"
-            });
-
-            meta.textContent = `${m.sender} • ${time}`;
-
-            const text = document.createElement("div");
-            text.textContent = m.text;
-
-            bubble.appendChild(meta);
-            bubble.appendChild(text);
-            row.appendChild(bubble);
-            chatBox.appendChild(row);
-        });
-
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    async function sendMessage() {
-        if (!sender) return;
-
-        const text = msgInput.value.trim();
-        if (!text) return;
-
-        try {
-            await fetch("/messages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sender, text }),
-            });
-            msgInput.value = "";
-            await fetchMessages();
-        } catch (e) {
-            console.error("Failed to send message", e);
-        }
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-
-    msgInput.addEventListener("keydown", e => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
+    saveIdentity(me, partner);
+    loginOverlay.style.display = "none";
     fetchMessages();
-    setInterval(fetchMessages, 3000);
-</script>
+  });
 
+  loginInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      loginBtn.click();
+    }
+  });
+
+  async function fetchMessages() {
+    try {
+      const res = await fetch("/messages?limit=50");
+      const data = await res.json();
+      renderMessages(data);
+    } catch (e) {
+      console.error("Failed to fetch messages", e);
+    }
+  }
+
+  function renderMessages(list) {
+    const currentUser = me || localStorage.getItem("miniChatMe") || "Me";
+    chatBox.innerHTML = "";
+
+    for (const m of list) {
+      const row = document.createElement("div");
+      row.className = "msg-row" + (m.sender === currentUser ? " me" : "");
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (m.sender === currentUser ? " me" : "");
+
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      const t = new Date(m.timestamp);
+      const timeStr = t.toLocaleTimeString("uk-UA", { hour: "2-digit", minute: "2-digit" });
+      meta.textContent = `${m.sender} · ${timeStr}`;
+
+      const text = document.createElement("div");
+      text.className = "msg-text";
+      text.textContent = m.text;
+
+      bubble.appendChild(meta);
+      bubble.appendChild(text);
+      row.appendChild(bubble);
+      chatBox.appendChild(row);
+    }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const text = msgInput.value.trim();
+    const currentUser = me || localStorage.getItem("miniChatMe");
+
+    if (!currentUser || !text) return;
+
+    try {
+      await fetch("/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: currentUser, text }),
+      });
+      msgInput.value = "";
+      await fetchMessages();
+    } catch (e) {
+      console.error("Failed to send message", e);
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  msgInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  loadIdentity();
+  if (!me) {
+    loginOverlay.style.display = "flex";
+    loginInput.focus();
+  } else {
+    loginOverlay.style.display = "none";
+    fetchMessages();
+  }
+
+  setInterval(fetchMessages, 3000);
+</script>
 </body>
 </html>
