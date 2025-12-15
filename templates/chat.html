@@ -4,28 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Vova & Mari Chat</title>
+
   <style>
+    :root{
+      --inset-top: 0px;
+      --inset-bottom: 0px;
+      --ime-bottom: 0px;
+    }
+
     html, body { height: 100%; margin: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
 
-    /* Головний контейнер: 1 екран, без “vh пасток” */
-.app {
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
+    .app {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
 
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-    .header {
-      padding: 10px 12px;
-      background: #ffffff;
-      border-bottom: 1px solid #e6e6e6;
-      font-weight: 600;
+      /* ✅ реальні інсети від Android (через CSS vars) */
+      padding-top: var(--inset-top);
+      padding-bottom: calc(var(--inset-bottom) + var(--ime-bottom));
     }
 
-    /* Оце дає прокрутку */
     .messages {
       flex: 1;
       overflow-y: auto;
@@ -42,7 +41,7 @@
       border-radius: 14px;
       background: #4c7df0;
       color: white;
-      align-self: flex-end; /* за замовчуванням вправо */
+      align-self: flex-end;
       box-shadow: 0 1px 2px rgba(0,0,0,.08);
       word-wrap: break-word;
     }
@@ -51,14 +50,13 @@
 
     .meta { font-size: 12px; opacity: .8; margin-bottom: 6px; }
 
-    /* Поле вводу завжди внизу, НЕ fixed */
-.composer {
-  display: flex;
-  gap: 8px;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  background: #ffffff;
-  border-top: 1px solid #e6e6e6;
-}
+    .composer {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px calc(10px + var(--inset-bottom));
+      background: #ffffff;
+      border-top: 1px solid #e6e6e6;
+    }
 
     input {
       flex: 1;
@@ -69,24 +67,24 @@
       outline: none;
     }
 
-button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 12px;
-  background: #4c7df0;   /* синя, як бульбашки */
-  color: #fff;
-  font-weight: 600;
-  font-size: 16px;
-}
+    input:focus { border-color: #4c7df0; }
 
-button:active {
-  opacity: 0.85;
-}
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      background: #4c7df0;
+      color: #fff;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    button:active { opacity: 0.85; }
   </style>
 </head>
+
 <body>
   <div class="app">
-
     <div id="messages" class="messages"></div>
 
     <form id="form" class="composer">
