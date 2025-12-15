@@ -46,13 +46,13 @@
 
     .mine {
       align-self: flex-end;
-      background: #4c7df0; /* blue */
+      background: #4c7df0;
       border-bottom-right-radius: 6px;
     }
 
     .theirs {
       align-self: flex-start;
-      background: #ff5aa5; /* pink */
+      background: #ff5aa5;
       border-bottom-left-radius: 6px;
     }
 
@@ -88,6 +88,7 @@
       border: 1px solid #ddd;
       outline: none;
     }
+
     input:focus { border-color: #4c7df0; }
 
     button {
@@ -99,6 +100,7 @@
       font-weight: 600;
       font-size: 16px;
     }
+
     button:active { opacity: 0.85; }
 
     /* ===== FIRST RUN ===== */
@@ -113,37 +115,21 @@
       padding: 18px;
       z-index: 9999;
     }
+
     .overlay.show { display: flex; }
 
     .welcome {
       width: min(420px, 100%);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
 
     .question {
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 700;
       color: #111;
     }
-
-    .pick-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .pick-btn {
-      padding: 12px 10px;
-      border-radius: 14px;
-      border: 1px solid #e6e6e6;
-      background: #ffffff;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .pick-btn:active { opacity: .85; }
   </style>
 </head>
 
@@ -153,11 +139,12 @@
   <div id="overlay" class="overlay">
     <div class="welcome">
       <div class="question">Who do you love?</div>
-      <input id="loveInput" placeholder="Type Vova or Mari" autocomplete="off" />
-      <div class="pick-row">
-        <button class="pick-btn" id="pickVova">Vova</button>
-        <button class="pick-btn" id="pickMari">Mari</button>
-      </div>
+      <input
+        id="loveInput"
+        autocomplete="off"
+        autocapitalize="none"
+        spellcheck="false"
+      />
     </div>
   </div>
 
@@ -177,13 +164,10 @@
 
     const $overlay = document.getElementById('overlay');
     const $loveInput = document.getElementById('loveInput');
-    const $pickVova = document.getElementById('pickVova');
-    const $pickMari = document.getElementById('pickMari');
 
     function getLove() { return localStorage.getItem('love'); }
     function setLove(v) { localStorage.setItem('love', v); }
 
-    // inverse logic
     function computeSender(love) {
       if (love === 'Vova') return 'Maria';
       if (love === 'Mari') return 'Vova';
@@ -193,7 +177,7 @@
     let LOVE = getLove();
     let SENDER = computeSender(LOVE);
 
-    function showPicker() {
+    function showPickerIfNeeded() {
       if (!SENDER) {
         $overlay.classList.add('show');
         setTimeout(() => $loveInput.focus(), 50);
@@ -213,14 +197,12 @@
       setTimeout(() => $text.focus(), 50);
     }
 
-    $pickVova.onclick = () => applyChoice('Vova');
-    $pickMari.onclick = () => applyChoice('Mari');
-    $loveInput.onkeydown = e => {
+    $loveInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         applyChoice($loveInput.value);
       }
-    };
+    });
 
     function formatTime(ts) {
       const d = new Date(ts);
@@ -237,9 +219,8 @@
     }
 
     function renderMessage(m) {
-      const div = document.createElement('div');
       const mine = m.sender === SENDER;
-
+      const div = document.createElement('div');
       div.className = 'bubble ' + (mine ? 'mine' : 'theirs');
       div.innerHTML = `
         <div class="text">${m.text}</div>
@@ -258,7 +239,7 @@
       if (force || near) scrollToBottom();
     }
 
-    $form.onsubmit = async e => {
+    $form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!SENDER) return;
       const text = $text.value.trim();
@@ -272,7 +253,7 @@
 
       $text.value = '';
       loadMessages(true);
-    };
+    });
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => {
@@ -283,7 +264,7 @@
       });
     }
 
-    showPicker();
+    showPickerIfNeeded();
     loadMessages(true);
     setInterval(() => loadMessages(false), 2000);
   </script>
