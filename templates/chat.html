@@ -7,7 +7,10 @@
 
   <style>
     html, body { height: 100%; margin: 0; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f5f6f7;
+    }
 
     .app {
       height: 100%;
@@ -27,19 +30,46 @@
       box-sizing: border-box;
     }
 
+    /* ===== MESSAGE BUBBLES ===== */
+
     .bubble {
       max-width: min(78%, 520px);
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: #4c7df0;
+      padding: 10px 12px 8px;
+      border-radius: 16px;
       color: white;
-      align-self: flex-end;
       box-shadow: 0 1px 2px rgba(0,0,0,.08);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
       word-wrap: break-word;
     }
-    .bubble.left { background: #ffffff; color: #111; align-self: flex-start; }
 
-    .meta { font-size: 12px; opacity: .8; margin-bottom: 6px; }
+    .mine {
+      align-self: flex-end;
+      background: #4c7df0; /* blue */
+      border-bottom-right-radius: 6px;
+    }
+
+    .theirs {
+      align-self: flex-start;
+      background: #ff5aa5; /* pink */
+      border-bottom-left-radius: 6px;
+    }
+
+    .text {
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .time {
+      font-size: 12px;
+      opacity: 0.8;
+      align-self: flex-end;
+      line-height: 1;
+      user-select: none;
+    }
+
+    /* ===== COMPOSER ===== */
 
     .composer {
       display: flex;
@@ -71,83 +101,65 @@
     }
     button:active { opacity: 0.85; }
 
-    /* ----- First-run picker modal ----- */
+    /* ===== FIRST RUN ===== */
+
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.35);
+      background: #f5f6f7;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 18px;
       z-index: 9999;
     }
     .overlay.show { display: flex; }
 
-    .modal {
+    .welcome {
       width: min(420px, 100%);
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .modal h2 {
-      margin: 0 0 8px;
-      font-size: 18px;
+
+    .question {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111;
     }
-    .modal p {
-      margin: 0 0 14px;
-      color: #444;
-      font-size: 14px;
-      line-height: 1.35;
-    }
+
     .pick-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
+
     .pick-btn {
       padding: 12px 10px;
       border-radius: 14px;
       border: 1px solid #e6e6e6;
-      background: #f6f7f9;
+      background: #ffffff;
       font-weight: 700;
       font-size: 16px;
       cursor: pointer;
     }
     .pick-btn:active { opacity: .85; }
-
-    /* Small debug badge (optional, but helpful) */
-    .badge {
-      position: fixed;
-      right: 10px;
-      bottom: 78px;
-      background: rgba(17,17,17,0.72);
-      color: #fff;
-      font-size: 12px;
-      padding: 6px 8px;
-      border-radius: 10px;
-      z-index: 10;
-      display: none;
-    }
-    .badge.show { display: inline-block; }
   </style>
 </head>
 
 <body>
-  <!-- First-run chooser -->
+
+  <!-- First run -->
   <div id="overlay" class="overlay">
-    <div class="modal">
-      <h2>Who do you love? 💘</h2>
-      <p>Choose once on this device. If you choose <b>Vova</b>, you will write as <b>Maria</b>, and vice versa.</p>
+    <div class="welcome">
+      <div class="question">Who do you love?</div>
+      <input id="loveInput" placeholder="Type Vova or Mari" autocomplete="off" />
       <div class="pick-row">
-        <button class="pick-btn" type="button" id="pickVova">Vova</button>
-        <button class="pick-btn" type="button" id="pickMaria">Maria</button>
+        <button class="pick-btn" id="pickVova">Vova</button>
+        <button class="pick-btn" id="pickMari">Mari</button>
       </div>
     </div>
   </div>
-
-  <div id="senderBadge" class="badge"></div>
 
   <div class="app">
     <div id="messages" class="messages"></div>
@@ -164,119 +176,104 @@
     const $text = document.getElementById('text');
 
     const $overlay = document.getElementById('overlay');
+    const $loveInput = document.getElementById('loveInput');
     const $pickVova = document.getElementById('pickVova');
-    const $pickMaria = document.getElementById('pickMaria');
-    const $badge = document.getElementById('senderBadge');
+    const $pickMari = document.getElementById('pickMari');
 
-    // --- One-time choice per device ---
-    // love = "Vova" or "Maria"
-    function getLove() {
-      return localStorage.getItem('love');
-    }
-    function setLove(name) {
-      localStorage.setItem('love', name);
-    }
+    function getLove() { return localStorage.getItem('love'); }
+    function setLove(v) { localStorage.setItem('love', v); }
 
-    // If love == Vova => sender = Maria; else sender = Vova
+    // inverse logic
     function computeSender(love) {
       if (love === 'Vova') return 'Maria';
-      if (love === 'Maria') return 'Vova';
+      if (love === 'Mari') return 'Vova';
       return null;
     }
 
     let LOVE = getLove();
     let SENDER = computeSender(LOVE);
 
-    function showPickerIfNeeded() {
+    function showPicker() {
       if (!SENDER) {
         $overlay.classList.add('show');
-      } else {
-        $overlay.classList.remove('show');
+        setTimeout(() => $loveInput.focus(), 50);
       }
     }
 
-    function updateBadge() {
-      // If you don't want the badge, set show=false below.
-      const show = false; // <- change to true if you want a small "You write as X" label
-      if (!SENDER || !show) {
-        $badge.classList.remove('show');
-        return;
+    function applyChoice(raw) {
+      const v = raw.trim().toLowerCase();
+      if (v === 'vova') setLove('Vova');
+      else if (v === 'mari' || v === 'maria') setLove('Mari');
+      else return;
+
+      LOVE = getLove();
+      SENDER = computeSender(LOVE);
+      $overlay.classList.remove('show');
+      loadMessages(true);
+      setTimeout(() => $text.focus(), 50);
+    }
+
+    $pickVova.onclick = () => applyChoice('Vova');
+    $pickMari.onclick = () => applyChoice('Mari');
+    $loveInput.onkeydown = e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyChoice($loveInput.value);
       }
-      $badge.textContent = `You write as: ${SENDER}`;
-      $badge.classList.add('show');
+    };
+
+    function formatTime(ts) {
+      const d = new Date(ts);
+      return String(d.getHours()).padStart(2, '0') + ':' +
+             String(d.getMinutes()).padStart(2, '0');
     }
 
-    $pickVova.addEventListener('click', async () => {
-      setLove('Vova');
-      LOVE = 'Vova';
-      SENDER = computeSender(LOVE);
-      $overlay.classList.remove('show');
-      updateBadge();
-      await loadMessages(true);
-      $text.focus();
-    });
-
-    $pickMaria.addEventListener('click', async () => {
-      setLove('Maria');
-      LOVE = 'Maria';
-      SENDER = computeSender(LOVE);
-      $overlay.classList.remove('show');
-      updateBadge();
-      await loadMessages(true);
-      $text.focus();
-    });
-
-    // --- Smart autoscroll ---
-    function isNearBottom(thresholdPx = 120) {
-      const distance = $messages.scrollHeight - $messages.scrollTop - $messages.clientHeight;
-      return distance < thresholdPx;
+    function isNearBottom(th = 120) {
+      return $messages.scrollHeight - $messages.scrollTop - $messages.clientHeight < th;
     }
+
     function scrollToBottom() {
       $messages.scrollTop = $messages.scrollHeight;
     }
 
     function renderMessage(m) {
       const div = document.createElement('div');
-      const isMine = (m.sender === SENDER);
-      div.className = 'bubble ' + (isMine ? '' : 'left');
-      div.innerHTML =
-        `<div class="meta">${m.sender} · ${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-         <div>${m.text}</div>`;
+      const mine = m.sender === SENDER;
+
+      div.className = 'bubble ' + (mine ? 'mine' : 'theirs');
+      div.innerHTML = `
+        <div class="text">${m.text}</div>
+        <div class="time">${formatTime(m.timestamp)}</div>
+      `;
       return div;
     }
 
-    async function loadMessages(forceScroll = false) {
-      // якщо ще не вибрали "love" — не підтягуємо чат (щоб не було мерехтіння)
+    async function loadMessages(force = false) {
       if (!SENDER) return;
-
-      const wasNearBottom = isNearBottom();
+      const near = isNearBottom();
       const res = await fetch('/messages?limit=100');
       const data = await res.json();
-
       $messages.innerHTML = '';
       data.forEach(m => $messages.appendChild(renderMessage(m)));
-
-      if (forceScroll || wasNearBottom) scrollToBottom();
+      if (force || near) scrollToBottom();
     }
 
-    $form.addEventListener('submit', async (e) => {
+    $form.onsubmit = async e => {
       e.preventDefault();
-      if (!SENDER) return; // поки не вибрали love — не шлемо
-
+      if (!SENDER) return;
       const text = $text.value.trim();
       if (!text) return;
 
       await fetch('/messages', {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sender: SENDER, text })
       });
 
       $text.value = '';
-      await loadMessages(true);
-    });
+      loadMessages(true);
+    };
 
-    // viewport/keyboard smoothness
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => {
         if (isNearBottom()) {
@@ -286,9 +283,7 @@
       });
     }
 
-    // Init
-    showPickerIfNeeded();
-    updateBadge();
+    showPicker();
     loadMessages(true);
     setInterval(() => loadMessages(false), 2000);
   </script>
