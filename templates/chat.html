@@ -20,8 +20,10 @@
       display: flex;
       flex-direction: column;
 
-      /* ✅ реальні інсети від Android (через CSS vars) */
-      padding-top: var(--inset-top);
+      /* ✅ верх не лізе під статус-бар */
+      padding-top: min(var(--inset-top), 32px);
+
+      /* ✅ низ: system bars + клавіатура (коли відкрита) */
       padding-bottom: calc(var(--inset-bottom) + var(--ime-bottom));
     }
 
@@ -53,7 +55,7 @@
     .composer {
       display: flex;
       gap: 8px;
-      padding: 10px 12px calc(10px + var(--inset-bottom));
+      padding: 10px 12px; /* ✅ без inset тут, щоб не було “подвійного низу” */
       background: #ffffff;
       border-top: 1px solid #e6e6e6;
     }
