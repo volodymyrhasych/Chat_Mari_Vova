@@ -7,24 +7,20 @@
 
   <style>
     :root{
-      --inset-top: 0px;
-      --inset-bottom: 0px;
       --ime-bottom: 0px;
     }
 
     html, body { height: 100%; margin: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
 
+    /* ВЕРХ: не чіпаємо padding-top, цим керує Android.
+       НИЗ: піднімаємо тільки на висоту клавіатури. */
     .app {
       height: 100dvh;
       display: flex;
       flex-direction: column;
-
-      /* ✅ верх не лізе під статус-бар */
-      padding-top: min(var(--inset-top), 32px);
-
-      /* ✅ низ: system bars + клавіатура (коли відкрита) */
-      padding-bottom: calc(var(--inset-bottom) + var(--ime-bottom));
+      padding-top: 0;
+      padding-bottom: var(--ime-bottom);
     }
 
     .messages {
@@ -55,7 +51,7 @@
     .composer {
       display: flex;
       gap: 8px;
-      padding: 10px 12px; /* ✅ без inset тут, щоб не було “подвійного низу” */
+      padding: 10px 12px;
       background: #ffffff;
       border-top: 1px solid #e6e6e6;
     }
