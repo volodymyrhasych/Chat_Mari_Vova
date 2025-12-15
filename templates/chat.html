@@ -6,10 +6,6 @@
   <title>Vova & Mari Chat</title>
 
   <style>
-    :root{
-      --statusbar: 0px; /* Android підставить реальне значення */
-    }
-
     html, body { height: 100%; margin: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
 
@@ -20,18 +16,15 @@
       box-sizing: border-box;
     }
 
-    /* ✅ КЛЮЧОВЕ: відступ під статус-бар додаємо саме у контейнер повідомлень,
-       щоб бульбашки не могли “заліпати” до верху і лізти під іконки. */
+    /* невелике повітря зверху, але без “статусбар-математики” */
     .messages {
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-
-      padding: calc(12px + var(--statusbar)) 12px 12px;
+      padding: 16px 12px 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-
       box-sizing: border-box;
     }
 
@@ -101,6 +94,11 @@
 
     const SENDER = localStorage.getItem('sender') || 'Vova';
 
+    function isNearBottom(thresholdPx = 80) {
+      const distance = $messages.scrollHeight - $messages.scrollTop - $messages.clientHeight;
+      return distance < thresholdPx;
+    }
+
     function scrollToBottom() {
       $messages.scrollTop = $messages.scrollHeight;
     }
@@ -113,12 +111,19 @@
       return div;
     }
 
-    async function loadMessages() {
+    async function loadMessages(forceScroll = false) {
+      const wasNearBottom = isNearBottom();
+
       const res = await fetch('/messages?limit=100');
       const data = await res.json();
+
       $messages.innerHTML = '';
       data.forEach(m => $messages.appendChild(renderMessage(m)));
-      scrollToBottom();
+
+      // ✅ автоскрол тільки якщо ти і так був внизу
+      if (forceScroll || wasNearBottom) {
+        scrollToBottom();
+      }
     }
 
     $form.addEventListener('submit', async (e) => {
@@ -133,11 +138,17 @@
       });
 
       $text.value = '';
-      await loadMessages();
+      await loadMessages(true);
     });
 
-    loadMessages();
-    setInterval(loadMessages, 2000);
+    // ✅ при фокусі на інпуті (клавіатура/resize) просто докрутимо вниз
+    $text.addEventListener('focus', () => {
+      setTimeout(() => scrollToBottom(), 50);
+      setTimeout(() => scrollToBottom(), 250);
+    });
+
+    loadMessages(true);
+    setInterval(() => loadMessages(false), 2000);
   </script>
 </body>
 </html>
