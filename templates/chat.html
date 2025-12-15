@@ -1,358 +1,138 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mini Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Vova & Mari Chat</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: #eef2ff;
-      color: #111827;
-      overflow: hidden;
-    }
-
-    /* Корінь на весь екран */
-    .app-root {
-      min-height: 100vh;
-      display: flex;
-    }
-
-    /* Оболонка чату */
-    .chat-shell {
-      flex: 1;
+    /* Головний контейнер: 1 екран, без “vh пасток” */
+    .app {
+      height: 100dvh;
       display: flex;
       flex-direction: column;
-      min-height: 0;
-      padding: 8px 8px 10px;
-      background: #eef2ff;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
-    /* === ІСТОРІЯ === */
-    .chat-history {
-      flex: 1;
-      min-height: 0;
-      border-radius: 18px;
+    .header {
+      padding: 10px 12px;
       background: #ffffff;
-      padding: 10px 10px 12px;
-      overflow-y: auto;
+      border-bottom: 1px solid #e6e6e6;
+      font-weight: 600;
+    }
 
-      /* КЛЮЧОВЕ: всі повідомлення притискаємо до НИЗУ */
+    /* Оце дає прокрутку */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      gap: 6px;
+      gap: 10px;
     }
 
-    .msg-row {
-      display: flex;
-      width: 100%;
-      justify-content: flex-end;
-    }
-
-    .msg-bubble {
-      max-width: 78%;
-      border-radius: 16px;
-      padding: 6px 10px;
-      background: #3b82f6;
-      border: 1px solid #1d4ed8;
-      color: #eff6ff;
-      font-size: 13px;
-      line-height: 1.25;
+    .bubble {
+      max-width: min(78%, 520px);
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #4c7df0;
+      color: white;
+      align-self: flex-end; /* за замовчуванням вправо */
+      box-shadow: 0 1px 2px rgba(0,0,0,.08);
       word-wrap: break-word;
-      white-space: pre-wrap;
     }
 
-    .msg-meta {
-      font-size: 11px;
-      opacity: 0.75;
-      margin-bottom: 2px;
-    }
+    .bubble.left { background: #ffffff; color: #111; align-self: flex-start; }
 
-    /* === РЯДОК ВВОДУ ВНИЗУ === */
+    .meta { font-size: 12px; opacity: .8; margin-bottom: 6px; }
+
+    /* Поле вводу завжди внизу, НЕ fixed */
     .composer {
-      margin-top: 8px;
       display: flex;
       gap: 8px;
-      align-items: center;
-      flex-shrink: 0;
+      padding: 10px 12px;
+      background: #ffffff;
+      border-top: 1px solid #e6e6e6;
     }
 
-    .composer-input {
+    input {
       flex: 1;
-      border-radius: 999px;
-      border: 1px solid #bfdbfe;
-      background: #f9fbff;
+      font-size: 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      outline: none;
+    }
+
+    button {
       padding: 10px 14px;
-      font-size: 14px;
-      outline: none;
-      resize: none;
-      max-height: 120px;
-    }
-
-    .composer-input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
-      background: #ffffff;
-    }
-
-    .send-btn {
-      border-radius: 999px;
       border: none;
-      padding: 11px 22px;
-      font-size: 14px;
+      border-radius: 12px;
+      background: #111;
+      color: #fff;
       font-weight: 600;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: #f9fafb;
-      cursor: pointer;
-      box-shadow:
-        0 14px 30px rgba(37, 99, 235, 0.55),
-        0 0 0 1px rgba(30, 64, 175, 0.7);
-      white-space: nowrap;
-    }
-
-    .send-btn:active {
-      transform: translateY(1px);
-      box-shadow:
-        0 8px 18px rgba(37, 99, 235, 0.6),
-        0 0 0 1px rgba(30, 64, 175, 0.8);
-    }
-
-    /* === ЛОГІН-ЕКРАН === */
-
-    #login-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: radial-gradient(circle at top,
-        rgba(191, 219, 254, 0.55),
-        rgba(15, 23, 42, 0.82));
-      padding: 16px;
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 380px;
-      border-radius: 22px;
-      background: #f9fafb;
-      box-shadow:
-        0 24px 60px rgba(15, 23, 42, 0.6),
-        0 0 0 1px rgba(148, 163, 184, 0.55);
-      padding: 20px 20px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .login-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: #111827;
-      text-align: left;
-    }
-
-    .login-input {
-      width: 100%;
-      border-radius: 999px;
-      border: 1px solid #bfdbfe;
-      background: #f9fbff;
-      padding: 9px 14px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .login-input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
-      background: #ffffff;
-    }
-
-    .login-button {
-      align-self: flex-end;
-      margin-top: 4px;
-      border-radius: 999px;
-      border: none;
-      padding: 9px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: #f9fafb;
-      cursor: pointer;
-      box-shadow:
-        0 14px 30px rgba(37, 99, 235, 0.55),
-        0 0 0 1px rgba(30, 64, 175, 0.7);
-      white-space: nowrap;
-    }
-
-    .login-button:active {
-      transform: translateY(1px);
-      box-shadow:
-        0 8px 18px rgba(37, 99, 235, 0.6),
-        0 0 0 1px rgba(30, 64, 175, 0.8);
     }
   </style>
 </head>
 <body>
-<div class="app-root">
-  <div class="chat-shell">
-    <div id="chat" class="chat-history"></div>
+  <div class="app">
+    <div class="header">Mini Chat</div>
 
-    <div class="composer">
-      <textarea
-        id="message-input"
-        class="composer-input"
-        placeholder="Напиши повідомлення…"
-      ></textarea>
-      <button id="send-btn" class="send-btn">Send</button>
-    </div>
+    <div id="messages" class="messages"></div>
+
+    <form id="form" class="composer">
+      <input id="text" placeholder="Напиши повідомлення…" autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
   </div>
-</div>
 
-<!-- Логін-екран -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-title">Who do you love?</div>
-    <input
-      id="love-input"
-      class="login-input"
-      autocomplete="off"
-    />
-    <button id="love-button" class="login-button">Continue</button>
-  </div>
-</div>
+  <script>
+    const $messages = document.getElementById('messages');
+    const $form = document.getElementById('form');
+    const $text = document.getElementById('text');
 
-<script>
-  const chatBox = document.getElementById("chat");
-  const msgInput = document.getElementById("message-input");
-  const sendBtn = document.getElementById("send-btn");
+    const SENDER = localStorage.getItem('sender') || 'Vova';
 
-  const loginScreen = document.getElementById("login-screen");
-  const loveInput = document.getElementById("love-input");
-  const loveButton = document.getElementById("love-button");
-
-  const STORAGE_KEY = "miniChatName";
-  let currentSender = null;
-
-  function resolveNameFromLove(answer) {
-    if (!answer) return null;
-    const a = answer.trim().toLowerCase();
-    if (a === "vova") return "Mari";
-    if (a === "mari") return "Vova";
-    return null;
-  }
-
-  function initLogin() {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored && stored.trim()) {
-      currentSender = stored.trim();
-      loginScreen.style.display = "none";
-      return;
+    function scrollToBottom() {
+      $messages.scrollTop = $messages.scrollHeight;
     }
 
-    loginScreen.style.display = "flex";
-
-    function handleLoveSubmit() {
-      const raw = loveInput.value;
-      const name = resolveNameFromLove(raw);
-      if (!name) {
-        loveInput.value = "";
-        loveInput.placeholder = "Type Vova or Mari";
-        return;
-      }
-      currentSender = name;
-      window.localStorage.setItem(STORAGE_KEY, name);
-      loginScreen.style.display = "none";
-      fetchMessages();
+    function renderMessage(m) {
+      const div = document.createElement('div');
+      div.className = 'bubble ' + (m.sender === SENDER ? '' : 'left');
+      div.innerHTML = `<div class="meta">${m.sender} · ${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                       <div>${m.text}</div>`;
+      return div;
     }
 
-    loveButton.onclick = handleLoveSubmit;
-    loveInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleLoveSubmit();
-      }
-    });
-  }
-
-  function renderMessages(list) {
-    chatBox.innerHTML = "";
-    for (const m of list) {
-      const row = document.createElement("div");
-      row.className = "msg-row";
-
-      const bubble = document.createElement("div");
-      bubble.className = "msg-bubble";
-
-      const meta = document.createElement("div");
-      meta.className = "msg-meta";
-      const t = new Date(m.timestamp);
-      const timeStr = t.toLocaleTimeString("uk-UA", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      meta.textContent = `${m.sender} · ${timeStr}`;
-
-      const text = document.createElement("div");
-      text.textContent = m.text;
-
-      bubble.appendChild(meta);
-      bubble.appendChild(text);
-      row.appendChild(bubble);
-      chatBox.appendChild(row);
-    }
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  async function fetchMessages() {
-    try {
-      const res = await fetch("/messages?limit=100");
+    async function loadMessages() {
+      const res = await fetch('/messages?limit=100');
       const data = await res.json();
-      renderMessages(data);
-    } catch (e) {
-      console.error("Failed to fetch messages", e);
+      $messages.innerHTML = '';
+      data.forEach(m => $messages.appendChild(renderMessage(m)));
+      scrollToBottom();
     }
-  }
 
-  async function sendMessage() {
-    const text = msgInput.value.trim();
-    if (!text || !currentSender) return;
-    try {
-      await fetch("/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender: currentSender, text }),
-      });
-      msgInput.value = "";
-      await fetchMessages();
-    } catch (e) {
-      console.error("Failed to send message", e);
-    }
-  }
-
-  sendBtn.addEventListener("click", sendMessage);
-  msgInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    $form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      sendMessage();
-    }
-  });
+      const text = $text.value.trim();
+      if (!text) return;
 
-  initLogin();
-  fetchMessages();
-  setInterval(fetchMessages, 3000);
-</script>
+      await fetch('/messages', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ sender: SENDER, text })
+      });
+
+      $text.value = '';
+      await loadMessages();
+    });
+
+    loadMessages();
+    setInterval(loadMessages, 2000);
+  </script>
 </body>
 </html>
