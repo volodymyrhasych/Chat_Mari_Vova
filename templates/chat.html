@@ -6,6 +6,10 @@
   <title>Vova & Mari Chat</title>
 
   <style>
+    :root{
+      --statusbar: 0px; /* Android підставить реальне значення */
+    }
+
     html, body { height: 100%; margin: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
 
@@ -14,17 +18,20 @@
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
-      padding-top: 6px; /* маленький “повітряний” відступ, без safe-area магії */
     }
 
+    /* ✅ КЛЮЧОВЕ: відступ під статус-бар додаємо саме у контейнер повідомлень,
+       щоб бульбашки не могли “заліпати” до верху і лізти під іконки. */
     .messages {
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 12px;
+
+      padding: calc(12px + var(--statusbar)) 12px 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+
       box-sizing: border-box;
     }
 
