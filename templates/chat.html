@@ -9,14 +9,14 @@
     html, body { height: 100%; margin: 0; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #f5f6f7; }
 
+    /* ❗️Важливо: НЕ 100vh. На Android + клавіатура це часто “стрибає”. */
     .app {
-      height: 100vh;
+      height: 100%;
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
     }
 
-    /* невелике повітря зверху, але без “статусбар-математики” */
     .messages {
       flex: 1;
       overflow-y: auto;
@@ -94,7 +94,7 @@
 
     const SENDER = localStorage.getItem('sender') || 'Vova';
 
-    function isNearBottom(thresholdPx = 80) {
+    function isNearBottom(thresholdPx = 120) {
       const distance = $messages.scrollHeight - $messages.scrollTop - $messages.clientHeight;
       return distance < thresholdPx;
     }
@@ -120,10 +120,7 @@
       $messages.innerHTML = '';
       data.forEach(m => $messages.appendChild(renderMessage(m)));
 
-      // ✅ автоскрол тільки якщо ти і так був внизу
-      if (forceScroll || wasNearBottom) {
-        scrollToBottom();
-      }
+      if (forceScroll || wasNearBottom) scrollToBottom();
     }
 
     $form.addEventListener('submit', async (e) => {
@@ -141,11 +138,18 @@
       await loadMessages(true);
     });
 
-    // ✅ при фокусі на інпуті (клавіатура/resize) просто докрутимо вниз
-    $text.addEventListener('focus', () => {
-      setTimeout(() => scrollToBottom(), 50);
-      setTimeout(() => scrollToBottom(), 250);
-    });
+    // ✅ При появі клавіатури viewport змінюється: докручуємо вниз, але тільки якщо користувач був внизу
+    if (window.visualViewport) {
+      let lastH = window.visualViewport.height;
+      window.visualViewport.addEventListener('resize', () => {
+        const near = isNearBottom();
+        if (near) {
+          setTimeout(scrollToBottom, 50);
+          setTimeout(scrollToBottom, 250);
+        }
+        lastH = window.visualViewport.height;
+      });
+    }
 
     loadMessages(true);
     setInterval(() => loadMessages(false), 2000);
